@@ -1,0 +1,104 @@
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 10px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(75, 85, 99, 0.5);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.8);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+/* Hide scrollbar for layout but allow scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Base transitions */
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item.active {
+    background-color: rgba(59, 130, 246, 0.1); /* primary-500 with opacity */
+    color: #2563eb; /* primary-600 */
+    font-weight: 600;
+}
+.dark .nav-item.active {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa; /* primary-400 */
+}
+
+/* Task Checkbox Customization */
+.task-checkbox {
+    appearance: none;
+    background-color: transparent;
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 1.25em;
+    height: 1.25em;
+    border: 2px solid currentColor;
+    border-radius: 0.35em;
+    display: grid;
+    place-content: center;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.task-checkbox::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em white;
+    background-color: white;
+    transform-origin: center;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.task-checkbox:checked {
+    background-color: currentColor;
+    border-color: currentColor;
+}
+
+.task-checkbox:checked::before {
+    transform: scale(1);
+}
+
+/* Safe area padding for mobile notch/home bar */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
