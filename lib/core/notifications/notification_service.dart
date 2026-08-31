@@ -20,10 +20,19 @@ class NotificationService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/logo');
 
+    const WindowsInitializationSettings initializationSettingsWindows =
+        WindowsInitializationSettings(
+          appName: 'Focus Flow',
+          appUserModelId: 'com.ahbandegan.focusflow',
+          guid: 'a29b7941-8f55-46f9-b88e-6701ba332b73', // Example GUID
+        );
+
     // For iOS/macOS, initialization settings would go here,
     // but the project currently lacks the ios folder so we skip it to prevent errors.
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      windows: initializationSettingsWindows,
+    );
 
     await flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,

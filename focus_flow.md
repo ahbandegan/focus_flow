@@ -81,52 +81,6 @@ The shape language is defined by **16px (rounded-lg)** corners for primary conta
 *   **Timer Display:** Centered, large-scale typography using `timer-display` tokens, utilizing the Accent color when the timer is counting down.
 
 
-
-lib/
-├── core/
-│   ├── database/
-│   ├── notifications/
-│   ├── router/
-│   ├── theme/
-│   └── utils/
-│
-├── features/
-│   ├── tasks/
-│   │   ├── data/
-│   │   ├── domain/
-│   │   └── presentation/
-│   │       ├── bloc/
-│   │       │   ├── task_bloc.dart
-│   │       │   ├── task_event.dart
-│   │       │   └── task_state.dart
-│   │       └── pages/
-│   │
-│   ├── projects/
-│   │   ├── data/
-│   │   ├── domain/
-│   │   └── presentation/
-│   │       └── bloc/
-│   │
-│   ├── pomodoro/
-│   │   ├── data/
-│   │   ├── domain/
-│   │   └── presentation/
-│   │       └── bloc/
-│   │
-│   ├── statistics/
-│   │   └── presentation/
-│   │       └── bloc/
-│   │
-│   ├── habits/
-│   │   └── presentation/
-│   │       └── bloc/
-│   │
-│   └── settings/
-│       └── presentation/
-│           └── bloc/
-│
-└── main.dart
-
 TaskBloc
 ├── LoadTasks
 ├── AddTask

@@ -1,6 +1,6 @@
-{
-    "name": "todo_list_pro",
-    "short_name": "todo_list_pro",
+﻿{
+    "name": "focus_flow",
+    "short_name": "focus_flow",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

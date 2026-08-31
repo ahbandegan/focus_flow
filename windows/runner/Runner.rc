@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 #include "resource.h"
@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "todo_list_pro" "\0"
+            VALUE "FileDescription", "focus_flow" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "todo_list_pro" "\0"
+            VALUE "InternalName", "focus_flow" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "todo_list_pro.exe" "\0"
-            VALUE "ProductName", "todo_list_pro" "\0"
+            VALUE "OriginalFilename", "focus_flow.exe" "\0"
+            VALUE "ProductName", "focus_flow" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
