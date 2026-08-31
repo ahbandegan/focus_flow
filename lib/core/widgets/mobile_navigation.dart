@@ -239,7 +239,7 @@ class _MobileNavigationState extends State<MobileNavigation> {
             Positioned(
               right: widget.size.width / 2 - 35,
               left: widget.size.width / 2 - 35,
-              top: -20,
+              top: -27,
               child: GestureDetector(
                 onTap: () {
                   // TODO show modal create task
@@ -249,9 +249,9 @@ class _MobileNavigationState extends State<MobileNavigation> {
                     color: Colors.blue,
                     shape: BoxShape.circle,
                   ),
-                  width: widget.size.width * 10 / 100,
-                  height: widget.size.width * 10 / 100,
-                  child: Icon(Icons.add, size: widget.size.width * 6 / 100),
+                  width: widget.size.width * 16 / 100,
+                  height: widget.size.width * 16 / 100,
+                  child: Icon(Icons.add, size: widget.size.width * 7 / 100, color: Colors.white,),
                 ),
               ),
             ),

@@ -9,6 +9,8 @@ import 'core/widgets/mobile_navigation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().init();
+  await NotificationService().requestPermissions();
+
   runApp(const FocusFlowApp());
 }
 
