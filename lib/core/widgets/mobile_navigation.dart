@@ -35,14 +35,14 @@ class _MobileNavigationState extends State<MobileNavigation> {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                        onTap: () => widget.onTap(0),
+                            onTap: () => widget.onTap(0),
                             child: AnimatedContainer(
                               color: widget.currentIndex == 0
                                   ? Theme.of(context)
                                         .colorScheme
                                         .primaryContainer
                                   : Colors.transparent,
-                              duration: Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 200),
                               child: Padding(
                                 padding: const EdgeInsets.all(13.0),
                                 child: Column(
@@ -71,8 +71,10 @@ class _MobileNavigationState extends State<MobileNavigation> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                       ),
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text("Today"),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      child: const Text("Today"),
                                     ),
                                   ],
                                 ),
@@ -83,14 +85,14 @@ class _MobileNavigationState extends State<MobileNavigation> {
 
                         Expanded(
                           child: GestureDetector(
-                                                    onTap: () => widget.onTap(1),
+                            onTap: () => widget.onTap(1),
                             child: AnimatedContainer(
                               color: widget.currentIndex == 1
                                   ? Theme.of(context)
                                         .colorScheme
                                         .primaryContainer
                                   : Colors.transparent,
-                              duration: Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 200),
                               child: Padding(
                                 padding: const EdgeInsets.all(13.0),
                                 child: Column(
@@ -119,8 +121,10 @@ class _MobileNavigationState extends State<MobileNavigation> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                       ),
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text("Tasks"),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      child: const Text("Tasks"),
                                     ),
                                   ],
                                 ),
@@ -131,20 +135,22 @@ class _MobileNavigationState extends State<MobileNavigation> {
                       ],
                     ),
                   ),
+                  // Space for the FAB
+                  const SizedBox(width: 70),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Expanded(
                           child: GestureDetector(
-                                                    onTap: () => widget.onTap(2),
+                            onTap: () => widget.onTap(2),
                             child: AnimatedContainer(
                               color: widget.currentIndex == 2
                                   ? Theme.of(context)
                                         .colorScheme
                                         .primaryContainer
                                   : Colors.transparent,
-                              duration: Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 200),
                               child: Padding(
                                 padding: const EdgeInsets.all(13.0),
                                 child: Column(
@@ -173,8 +179,10 @@ class _MobileNavigationState extends State<MobileNavigation> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                       ),
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text("Focus"),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      child: const Text("Focus"),
                                     ),
                                   ],
                                 ),
@@ -185,14 +193,14 @@ class _MobileNavigationState extends State<MobileNavigation> {
 
                         Expanded(
                           child: GestureDetector(
-                        onTap: () => widget.onTap(3),
+                            onTap: () => widget.onTap(3),
                             child: AnimatedContainer(
                               color: widget.currentIndex == 3
                                   ? Theme.of(context)
                                         .colorScheme
                                         .primaryContainer
                                   : Colors.transparent,
-                              duration: Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 200),
                               child: Padding(
                                 padding: const EdgeInsets.all(13.0),
                                 child: Column(
@@ -221,8 +229,10 @@ class _MobileNavigationState extends State<MobileNavigation> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                       ),
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text("Stats"),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      child: const Text("Stats"),
                                     ),
                                   ],
                                 ),
@@ -237,21 +247,23 @@ class _MobileNavigationState extends State<MobileNavigation> {
               ),
             ),
             Positioned(
-              right: widget.size.width / 2 - 35,
-              left: widget.size.width / 2 - 35,
-              top: -27,
-              child: GestureDetector(
-                onTap: () {
-                  // TODO show modal create task
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
+              left: 0,
+              right: 0,
+              top: -30,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO show modal create task
+                  },
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    width: 60,
+                    height: 60,
+                    child: const Icon(Icons.add, size: 28, color: Colors.white),
                   ),
-                  width: widget.size.width * 16 / 100,
-                  height: widget.size.width * 16 / 100,
-                  child: Icon(Icons.add, size: widget.size.width * 7 / 100, color: Colors.white,),
                 ),
               ),
             ),
