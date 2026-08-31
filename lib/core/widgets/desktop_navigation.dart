@@ -50,7 +50,15 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
           curve: Curves.easeInOut,
           width: expanded ? 300 : 77,
           height: widget.size.height,
-          color: Theme.of(context).colorScheme.surface,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: BoxBorder.fromLTRB(
+              right: BorderSide(
+                color: Theme.of(context).colorScheme.outline,
+                width: 2,
+              ),
+            ),
+          ),
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(15.0),
@@ -101,7 +109,7 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
-                              ).animate().fade().slideX(),
+                              ),
                           ],
                         ),
                       ),

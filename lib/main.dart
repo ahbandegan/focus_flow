@@ -66,6 +66,10 @@ class _InitialPageState extends State<InitialPage> {
     final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Focus Flow'),
+        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))],
+      ),
       body: size.width < 768
           ? MobileNavigation(
               pages: pages,
