@@ -125,8 +125,6 @@ class _InitialPageState extends State<InitialPage> {
             tooltip: 'Settings',
           ),
           const SizedBox(width: 10),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          const SizedBox(width: 10),
         ],
       ),
       body: !isDesktop
