@@ -9,14 +9,90 @@ sealed class TasksEvent extends Equatable {
 
 final class OnLoadTasksEvent extends TasksEvent {}
 
-final class OnAddTaskEvent extends TasksEvent {}
+final class OnAddTaskEvent extends TasksEvent {
+  final String title;
+  final int priority;
+  final bool isCompleted;
+  final int estimatedPomodoros;
+  final int completedPomodoros;
+  final int orderIndex;
+  final bool isDeleted;
 
-final class OnUpdateTaskEvent extends TasksEvent {}
+  const OnAddTaskEvent({
+    required this.title,
+    required this.priority,
+    required this.isCompleted,
+    required this.estimatedPomodoros,
+    required this.completedPomodoros,
+    required this.orderIndex,
+    required this.isDeleted,
+  });
 
-final class OnDeleteTaskEvent extends TasksEvent {}
+  @override
+  List<Object> get props => [
+    title,
+    priority,
+    isCompleted,
+    estimatedPomodoros,
+    completedPomodoros,
+    orderIndex,
+    isDeleted,
+  ];
+}
 
-final class OnCompleteTaskEvent extends TasksEvent {}
+// ignore: must_be_immutable
+final class OnUpdateTaskEvent extends TasksEvent {
+  final Task task;
 
-final class OnRestoreTaskEvent extends TasksEvent {}
+  const OnUpdateTaskEvent({required this.task});
+
+  @override
+  List<Object> get props => [task];
+}
+
+final class OnDeleteTaskEvent extends TasksEvent {
+  final int id;
+
+  const OnDeleteTaskEvent({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}
+
+final class OnCompleteTaskEvent extends TasksEvent {
+  final int id;
+
+  const OnCompleteTaskEvent({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}
+
+final class OnRestoreTaskEvent extends TasksEvent {
+  final int id;
+
+  const OnRestoreTaskEvent({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}
+
+final class OnSoftDeleteTaskEvent extends TasksEvent {
+  final int id;
+
+  const OnSoftDeleteTaskEvent({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}
+
+final class OnIincrementCompletedPomodorosEvent extends TasksEvent {
+  final int id;
+
+  const OnIincrementCompletedPomodorosEvent({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}
 
 final class OnFilterTasksEvent extends TasksEvent {}

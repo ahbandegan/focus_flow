@@ -7,27 +7,19 @@ abstract class TaskRepository {
     required int priority,
     required bool isCompleted,
     required int estimatedPomodoros,
-    required bool completedPomodoros,
+    required int completedPomodoros,
     required int orderIndex,
     required bool isDeleted,
   });
-  Future<bool> updateTask();
+  Future<bool> updateTask(Task task);
   Future<int> deleteTask(int id);
-  Future<bool> compliteTask(int id);
-  Future<bool> restoreTask();
+  Future<int> compliteTask(int id);
+  Future<int> restoreTask(int id);
   Stream<List<Task>> filterTask({
     int? priority,
     bool? isCompleted,
     String? searchQuery,
   });
+  Future<int> incrementCompletedPomodoros(int id);
+  Future<int> softDeleteTask(int id);
 }
-
-/* 
-OnLoadTasksEvent
-OnAddTaskEvent
-OnUpdateTaskEvent
-OnDeleteTaskEvent
-OnCompleteTaskEvent
-OnRestoreTaskEvent
-OnFilterTasksEvent
- */

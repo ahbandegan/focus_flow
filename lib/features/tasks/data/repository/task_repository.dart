@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:focus_flow/core/database/app_database.dart';
 import 'package:focus_flow/core/database/daos/tasks_dao.dart';
 import 'package:focus_flow/features/tasks/domain/repositories/task_repository.dart';
@@ -8,13 +9,8 @@ class TaskRepositoryImpl extends TaskRepository {
   TaskRepositoryImpl({required this._tasksDao});
 
   @override
-  Future<bool> compliteTask(int id) async {
-    final target = await _tasksDao.getTaskById(id);
-    if (target != null) {
-      return await _tasksDao.updateTask(target.copyWith(isCompleted: true));
-    }
-    return false;
-  }
+  Future<int> compliteTask(int id) async =>
+      await _tasksDao.toggleTaskCompletion(id, true);
 
   @override
   Future<int> deleteTask(int id) async => await _tasksDao.softDeleteTask(id);
@@ -30,7 +26,7 @@ class TaskRepositoryImpl extends TaskRepository {
   }) {
     return _tasksDao.filterTasks(
       isCompleted: false,
-      priority: 1,
+      priority: priority,
       searchQuery: "",
     );
   }
@@ -41,31 +37,35 @@ class TaskRepositoryImpl extends TaskRepository {
     required int priority,
     required bool isCompleted,
     required int estimatedPomodoros,
-    required bool completedPomodoros,
+    required int completedPomodoros,
     required int orderIndex,
     required bool isDeleted,
   }) {
     _tasksDao.insertTask(
-      TasksCompanion.insert(title: title, priority: priority,
-isCompleted: isCompleted,
-estimatedPomodoros: estimatedPomodoros,
-completedPomodoros: completedPomodoros,
-orderIndex: orderIndex,
-isDeleted: isDeleted,
-)
+      TasksCompanion.insert(
+        title: title,
+        priority: Value(priority),
+        isCompleted: Value(isCompleted),
+        estimatedPomodoros: Value(estimatedPomodoros),
+        completedPomodoros: Value(completedPomodoros),
+        orderIndex: Value(orderIndex),
+        isDeleted: Value(isDeleted),
+      ),
     );
     throw UnimplementedError();
   }
 
   @override
-  Future<bool> restoreTask() {
-    // TODO: implement restoreTask
-    throw UnimplementedError();
-  }
+  Future<int> restoreTask(int id) async => await _tasksDao.restoreTask(id);
 
   @override
-  Future<bool> updateTask() {
-    // TODO: implement updateTask
-    throw UnimplementedError();
-  }
+  Future<int> incrementCompletedPomodoros(int id) async =>
+      _tasksDao.incrementCompletedPomodoros(id);
+
+  @override
+  Future<int> softDeleteTask(int id) async =>
+      await _tasksDao.softDeleteTask(id);
+
+  @override
+  Future<bool> updateTask(Task task) async => await _tasksDao.updateTask(task);
 }
