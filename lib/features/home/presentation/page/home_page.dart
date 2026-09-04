@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
-  AudioPlayer player = AudioPlayer();
+  final AudioPlayer player = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {

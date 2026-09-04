@@ -30,7 +30,7 @@ environment:
 dependencies:
   audioplayers: ^6.8.1
   cupertino_icons: ^1.0.9
-  drift: ^2.34.3
+  drift: ^2.34.4
   drift_flutter: ^0.3.1
   equatable: ^2.1.0
   file_picker: ^12.1.2
@@ -43,9 +43,12 @@ dependencies:
   get_it: ^9.2.1
   google_fonts: ^8.2.1
   intl: ^0.20.3
+  path: ^1.9.1
   path_provider: ^2.1.6
   permission_handler: ^13.0.1
+  shared_preferences: ^2.5.5
   sqflite: ^2.4.3
+  sqlite3_flutter_libs: ^0.6.0+eol
   timezone: ^0.11.1
   uuid: ^4.6.0
 
@@ -54,8 +57,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   # Drift
-  drift_dev: ^2.28.0
-  build_runner: ^2.7.0
+  drift_dev: ^2.34.6
+  build_runner: ^2.16.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
