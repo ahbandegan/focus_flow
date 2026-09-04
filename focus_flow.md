@@ -65,33 +65,55 @@ The shape language is defined by **16px (rounded-lg)** corners for primary conta
 ## BLoC Architecture
 
 ### TaskBloc
-* LoadTasks
-* AddTask
-* UpdateTask
-* DeleteTask
-* CompleteTask
-* RestoreTask
-* FilterTasks
+* **LoadTasks**: بارگذاری وظایف از دیتابیس (فیلتر بر اساس تسک‌های حذف‌نشده `is_deleted = false` و مرتب‌سازی بر اساس اولویت/ترتیب). ایجاد Stream یا واکشی اولیه برای نمایش در UI.
+  * *Functional Spec:* Fetches tasks from Drift DB, filters non-deleted tasks, and listens to DB task streams for reactive UI updates.
+* **AddTask**: اعتبارسنجی و ثبت تسک جدید در دیتابیس Drift به همراه اطلاعاتی مثل عنوان، توضیحات، اولویت، تاریخ سررسید، یادآور، تخمین پومودورو، تگ‌ها و زیرتسک‌ها.
+  * *Functional Spec:* Validates and inserts a new task record into `tasks` table with associated tags and subtasks.
+* **UpdateTask**: ویرایش فیلدهای یک تسک موجود (عنوان، توضیحات، تغییر اولویت، تاریخ سررسید، ترتیب چیدمان یا زیرتسک‌ها) در دیتابیس و به‌روزرسانی State.
+  * *Functional Spec:* Updates an existing task's properties in the database and emits the updated task list.
+* **DeleteTask**: حذف تسک به‌صورت نرم (`is_deleted = true`) برای انتقال به سطل بازیافت (Trash) و لغو نوتیفیکیشن‌های یادآور برنامه‌ریزی‌شده برای آن تسک.
+  * *Functional Spec:* Soft-deletes a task (`is_deleted = true`), cancels pending scheduled reminders, and updates the task list.
+* **CompleteTask**: تغییر وضعیت تسک به انجام‌شده (`is_completed = true`)، ثبت زمان دقیق تکمیل (`completed_at = DateTime.now()`) و انتقال تسک به بخش تسک‌های تمام‌شده.
+  * *Functional Spec:* Toggles completion flag to true, sets `completed_at` timestamp in DB, and emits updated state with completed task.
+* **RestoreTask**: بازگردانی تسک حذف‌شده از سطل زباله (`is_deleted = false`) یا خارج کردن تسک از حالت انجام‌شده (`is_completed = false`) به لیست تسک‌های فعال.
+  * *Functional Spec:* Restores a soft-deleted task back to active status, or unmarks a completed task back to pending.
+* **FilterTasks**: اعمال فیلتر و مرتب‌سازی روی لیست تسک‌های نمایشی بر اساس وضعیت (همه/فعال/تکمیل‌شده)، اولویت (فوری/بالا/متوسط/پایین)، تگ‌ها، یا تاریخ سررسید.
+  * *Functional Spec:* Filters and sorts visible tasks based on criteria (status, priority, tag, due date, or search query) without modifying DB records.
 
 ### PomodoroBloc
-* StartTimer
-* PauseTimer
-* ResumeTimer
-* StopTimer
-* SkipTimer
-* TimerTick
+* **StartTimer**: شروع بازه پومودورو (فوکوس یا استراحت)؛ تنظیم وضعیت روی `running`، ثبت زمان شروع، انتساب به تسک انتخاب‌شده (در صورت وجود) و آغاز شمارش معکوس با Ticker ثانیه‌ای.
+  * *Functional Spec:* Initializes and starts a Pomodoro session (focus/break) with target duration, links active task ID, and starts 1-second countdown ticker.
+* **PauseTimer**: متوقف کردن موقت تایمر؛ ذخیره ثانیه‌های باقی‌مانده و نگه‌داشتن وضعیت جاری بدون تغییر یا کنسل کردن سشن.
+  * *Functional Spec:* Temporarily pauses the countdown ticker while preserving remaining seconds and current session progress.
+* **ResumeTimer**: ادامه شمارش معکوس تایمر از همان ثانیه‌ای که متوقف شده بود و تغییر وضعیت مجدد به `running`.
+  * *Functional Spec:* Resumes the countdown ticker from where it was paused, updating status back to running.
+* **StopTimer**: لغو یا متوقف کردن دستی سشن پیش از اتمام؛ ذخیره زمان واقعی طی‌شده در جدول `pomodoro_sessions` (با `is_completed = false`) و بازنشانی تایمر به حالت اولیه.
+  * *Functional Spec:* Aborts active session, records partial duration into `pomodoro_sessions` (`is_completed = false`), and resets timer to idle state.
+* **SkipTimer**: رد کردن بازه فعلی بدون احتساب آن به عنوان تکمیل‌شده و رفتن به بازه بعدی طبق چرخه (مثلاً رفتن از فوکوس به استراحت کوتاه، یا از استراحت به فوکوس).
+  * *Functional Spec:* Skips current interval without marking it completed, transitioning immediately to the next scheduled interval type in the cycle.
+* **TimerTick**: ایونتی که هر یک ثانیه توسط Ticker فراخوانی می‌شود؛ کسر یک ثانیه از زمان باقی‌مانده و ارسال درصد پیشرفت. در زمان صفر شدن: ثبت سشن در دیتابیس (`is_completed = true`)، افزایش `completed_pomodoros` تسک مرتبط، پخش صدا/ارسال نوتیفیکیشن، و ورود به مرحله بعدی (استراحت یا کار).
+  * *Functional Spec:* Dispatched every second by internal ticker. Decrements remaining time, updates progress. At 00:00: persists completed session, increments task pomodoro count, triggers sound/alert, and transitions to next session phase.
 
 ### StatisticsBloc
-* LoadDailyStats
-* LoadWeeklyStats
-* LoadMonthlyStats
-* ChangeDateRange
+* **LoadDailyStats**: دریافت و پردازش آمار پومودوروها و تسک‌های امروز (از 00:00 تا 23:59)؛ محاسبه مجموع دقایق تمرکز، مقایسه با تارگت روزانه (مثلاً ۸ پومودورو)، و تفکیک ساعتی.
+  * *Functional Spec:* Queries today's completed sessions and tasks; computes total focus minutes, goal progress, and hourly productivity breakdown.
+* **LoadWeeklyStats**: دریافت و تجمیع داده‌های هفته جاری (۷ روز اخیر یا دوشنبه تا یکشنبه)؛ رسم نمودار روزانه، محاسبه میانگین فوکوس در روز و تحلیل روند بهره‌وری.
+  * *Functional Spec:* Aggregates week-to-date sessions; computes daily focus averages, bar-chart distributions, and productivity trends.
+* **LoadMonthlyStats**: دریافت آمار ماه جاری؛ محاسبه ساعت‌های کل فوکوس، درصد تکمیل تسک‌ها و داده‌های تقویم حرارتی (Heatmap) فعالیت در ماه.
+  * *Functional Spec:* Fetches current month's sessions and completed tasks; calculates monthly totals, completion rates, and calendar heatmap data.
+* **ChangeDateRange**: دریافت یک بازه زمانی دلخواه (تاریخ شروع و پایان) و محاسبه تمام متریک‌ها و نمودارهای تمرکز در آن بازه سفارشی.
+  * *Functional Spec:* Accepts a custom start and end date range, querying and aggregating session metrics and task logs within that interval.
 
 ### SettingsCubit
-* Theme
-* TimerSettings
-* NotificationSettings
-* AppSettings
+* **Theme** (`updateThemeMode`): تغییر و ذخیره حالت تم برنامه (سیستمی `system`، روشن `light`، تاریک `dark`) در `SharedPreferences` و اعمال آنی روی UI.
+  * *Functional Spec:* Updates and persists UI theme mode in `SharedPreferences` and emits new state for instant switching.
+* **TimerSettings** (`updateTimerSettings`): ویرایش و ذخیره مدت زمان‌های پومودورو (فوکوس، استراحت کوتاه، استراحت طولانی، دوره استراحت طولانی، شروع خودکار استراحت/کار) در SharedPreferences.
+  * *Functional Spec:* Updates and persists custom durations and auto-start preferences for focus and break intervals.
+* **NotificationSettings** (`updateNotificationSettings`): تنظیم و ذخیره فعال/غیرفعال بودن صدای زنگ، انتخاب نوع صدای زنگ (`soundName`) و ارسال نوتیفیکیشن‌های محلی تایمر.
+  * *Functional Spec:* Toggles and persists sound alerts, alert ringtone selection, and local notification triggers.
+* **AppSettings** (`updateAppSettings` / `resetSettings`): مدیریت تنظیمات کلی برنامه مانند تعیین هدف روزانه پومودورو (`dailyTarget`، پیش‌فرض ۸) یا بازگردانی تمام تنظیمات به حالت اولیه.
+  * *Functional Spec:* Manages general settings like daily target pomodoros count and restoring default app configurations.
+
 
 ---
 

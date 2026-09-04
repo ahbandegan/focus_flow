@@ -16,6 +16,7 @@ final class TasksErrorState extends TasksState {
   const TasksErrorState({required this.error});
 }
 
-final class TasksSuccessState extends TasksState {
-  
+final class TasksSuccessState<T> extends TasksState {
+  final T data;
+  const TasksSuccessState({required this.data});
 }
