@@ -91,7 +91,12 @@ class InitialPage extends StatefulWidget {
 }
 
 class _InitialPageState extends State<InitialPage> {
-  List<Widget> pages = [HomePage(), HomePage(), HomePage(), HomePage()];
+  List<Widget> pages = [
+    HomePage(settingsRepository: di<SettingsRepository>()),
+    HomePage(settingsRepository: di<SettingsRepository>()),
+    HomePage(settingsRepository: di<SettingsRepository>()),
+    HomePage(settingsRepository: di<SettingsRepository>()),
+  ];
   int currentIndex = 0;
   bool isDesktopMenuOpen = false;
 

@@ -100,7 +100,7 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                         ],
                       ),
                       const SizedBox(height: 16),
-
+                  
                       // 2. Add Task Button
                       Material(
                         color: Colors.blueAccent,
@@ -136,7 +136,7 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
+                  
                       // 3. Section Title
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -153,7 +153,7 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                         ),
                       ),
                       const SizedBox(height: 4),
-
+                  
                       // 4. Navigation Items
                       _buildNavItem(
                         context: context,
@@ -186,13 +186,13 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                         iconColor: Colors.deepOrangeAccent,
                         label: "Stats",
                       ),
-
+                  
                       const Spacer(),
-
+                  
                       // 5. Divider
                       Divider(color: theme.dividerColor.withValues(alpha: 0.2)),
                       const SizedBox(height: 8),
-
+                  
                       // 6. Settings Shortcut
                       Material(
                         color: Colors.transparent,
