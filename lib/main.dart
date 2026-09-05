@@ -9,6 +9,7 @@ import 'package:focus_flow/features/settings/presentation/cubit/settings_cubit.d
 import 'package:focus_flow/features/settings/presentation/widget/settings_bottom_sheet.dart';
 import 'package:focus_flow/initialize_dependensies.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/widgets/mobile_navigation.dart';
 
@@ -21,6 +22,11 @@ void main() async {
 
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(systemStatusBarContrastEnforced: true),
+  );
+
+  await Supabase.initialize(
+    url: "https://ioqjcadumpjbwjmusakb.supabase.co",
+    anonKey: "sb_publishable_lOgmiUQVTS1WTd-3WuSoSw_rGwL2dFX",
   );
 
   runApp(

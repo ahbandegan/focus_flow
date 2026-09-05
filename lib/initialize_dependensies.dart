@@ -1,12 +1,15 @@
 import 'package:focus_flow/core/database/database_config.dart';
 import 'package:focus_flow/core/services/notification_service.dart';
 import 'package:focus_flow/core/services/settings_preferences_service.dart';
+import 'package:focus_flow/core/supabase/data/repository/supabase_repository.dart';
+import 'package:focus_flow/core/supabase/domain/repository/supabase_repository.dart';
 import 'package:focus_flow/features/settings/data/repositories/settings_repository.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/tasks/data/repository/task_repository.dart';
 import 'package:focus_flow/features/tasks/domain/repositories/task_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final di = GetIt.instance;
 
@@ -36,5 +39,10 @@ Future<void> initializeDi() async {
   );
   di.registerLazySingleton<TaskRepository>(
     () => TaskRepositoryImpl(tasksDao: di<TasksDao>()),
+  );
+
+  di.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+  di.registerLazySingleton<SupabaseRepository>(
+    () => SupabaseRepositoryImpl(client: di<SupabaseClient>()),
   );
 }
