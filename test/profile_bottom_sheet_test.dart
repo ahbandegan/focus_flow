@@ -11,13 +11,48 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MockSupabaseAuthRepository extends SupabaseAuthRepository {
-  MockSupabaseAuthRepository() : super(client: SupabaseClient('https://mock.supabase.co', 'fake-key'));
+  MockSupabaseAuthRepository()
+      : super(client: SupabaseClient('https://mock.supabase.co', 'fake-key'));
 
   @override
   User? get currentUser => null;
 
   @override
   Session? get currentSession => null;
+
+  @override
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse(
+      user: User(
+        id: 'mock-user-id',
+        appMetadata: {},
+        userMetadata: {},
+        aud: 'authenticated',
+        createdAt: DateTime.now().toIso8601String(),
+        email: email,
+      ),
+    );
+  }
+
+  @override
+  Future<AuthResponse> signIn({
+    required String email,
+    required String password,
+  }) async {
+    return AuthResponse(
+      user: User(
+        id: 'mock-user-id',
+        appMetadata: {},
+        userMetadata: {},
+        aud: 'authenticated',
+        createdAt: DateTime.now().toIso8601String(),
+        email: email,
+      ),
+    );
+  }
 }
 
 void main() {
@@ -56,9 +91,9 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(cubit));
     await tester.pumpAndSettle();
 
-    expect(find.text('ورود به حساب کاربری'), findsWidgets);
-    expect(find.text('ایمیل (Email)'), findsOneWidget);
-    expect(find.text('رمز عبور (Password)'), findsOneWidget);
+    expect(find.text('Sign In to Account'), findsWidgets);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
     expect(find.byType(FilledButton), findsOneWidget);
   });
 
@@ -73,8 +108,43 @@ void main() {
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('لطفاً ایمیل خود را وارد کنید'), findsOneWidget);
-    expect(find.text('لطفاً رمز عبور را وارد کنید'), findsOneWidget);
+    expect(find.text('Please enter your email'), findsOneWidget);
+    expect(find.text('Please enter your password'), findsOneWidget);
+  });
+
+  testWidgets('Shows email verification modal after sign up', (tester) async {
+    final service = di<SettingsPreferencesService>();
+    final repo = SettingsRepositoryImpl(service);
+    final cubit = SettingsCubit(repo);
+
+    await tester.pumpWidget(createWidgetUnderTest(cubit));
+    await tester.pumpAndSettle();
+
+    // Switch to Sign Up
+    await tester.tap(find.text('Sign Up').first);
+    await tester.pumpAndSettle();
+
+    // Enter email & password
+    await tester.enterText(find.byType(TextFormField).at(0), 'verify@test.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.pumpAndSettle();
+
+    // Tap submit
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    // Verification modal should be visible
+    expect(find.text('Verify Your Email'), findsOneWidget);
+    expect(find.widgetWithText(AlertDialog, 'Verify Your Email'), findsOneWidget);
+    expect(find.text('Go to Sign In'), findsOneWidget);
+
+    // Tap Go to Sign In
+    await tester.tap(find.text('Go to Sign In'));
+    await tester.pumpAndSettle();
+
+    // Modal is dismissed, and user is back on Sign In tab
+    expect(find.text('Verify Your Email'), findsNothing);
+    expect(find.text('Sign In to Account'), findsWidgets);
   });
 
   testWidgets('Renders Logged In profile view when user is logged in', (tester) async {
@@ -86,9 +156,9 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(cubit));
     await tester.pumpAndSettle();
 
-    expect(find.text('پروفایل کاربری'), findsOneWidget);
+    expect(find.text('User Profile'), findsOneWidget);
     expect(find.text('user@test.com'), findsWidgets);
-    expect(find.text('حساب فعال و متصل'), findsOneWidget);
-    expect(find.text('خروج از حساب کاربری'), findsOneWidget);
+    expect(find.text('Active & Connected'), findsOneWidget);
+    expect(find.text('Log Out'), findsOneWidget);
   });
 }

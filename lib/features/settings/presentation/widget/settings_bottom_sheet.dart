@@ -29,36 +29,64 @@ void openSettingsSheet(BuildContext context) {
                   const SizedBox(height: 16),
 
                   // 1. Theme Mode
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Theme Mode'),
-                    subtitle: Text(
-                      state.themeMode[0].toUpperCase() +
-                          state.themeMode.substring(1),
-                    ),
-                    trailing: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'light',
-                          icon: Icon(Icons.light_mode, size: 18),
-                          label: Text('Light'),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Theme Mode',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          Text(
+                            state.themeMode[0].toUpperCase() +
+                                state.themeMode.substring(1),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.outline,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<String>(
+                          segments: const [
+                            ButtonSegment(
+                              value: 'light',
+                              icon: Icon(Icons.light_mode, size: 18),
+                              label: Text('Light'),
+                            ),
+                            ButtonSegment(
+                              value: 'system',
+                              icon: Icon(Icons.brightness_auto, size: 18),
+                              label: Text('Auto'),
+                            ),
+                            ButtonSegment(
+                              value: 'dark',
+                              icon: Icon(Icons.dark_mode, size: 18),
+                              label: Text('Dark'),
+                            ),
+                          ],
+                          selected: {state.themeMode},
+                          onSelectionChanged: (selection) {
+                            context
+                                .read<SettingsCubit>()
+                                .changeTheme(selection.first);
+                          },
                         ),
-                        ButtonSegment(
-                          value: 'system',
-                          icon: Icon(Icons.brightness_auto, size: 18),
-                          label: Text('Auto'),
-                        ),
-                        ButtonSegment(
-                          value: 'dark',
-                          icon: Icon(Icons.dark_mode, size: 18),
-                          label: Text('Dark'),
-                        ),
-                      ],
-                      selected: {state.themeMode},
-                      onSelectionChanged: (selection) {
-                        context.read<SettingsCubit>().changeTheme(selection.first);
-                      },
-                    ),
+                      ),
+                    ],
                   ),
                   const Divider(height: 24),
 

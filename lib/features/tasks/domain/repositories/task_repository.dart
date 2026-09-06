@@ -4,7 +4,9 @@ abstract class TaskRepository {
   Future<List<Task>> featchAll();
   Future<int> insertTask({
     required String title,
+    String? description,
     required int priority,
+    DateTime? dueDate,
     required bool isCompleted,
     required int estimatedPomodoros,
     required int completedPomodoros,

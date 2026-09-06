@@ -1,10 +1,7 @@
 import 'supabase_repository.dart';
 
 class SupabaseDatabaseRepository extends SupabaseRepository {
-  SupabaseDatabaseRepository({
-    required super.client,
-  });
-
+  SupabaseDatabaseRepository({required super.client});
 
   Future<List<Map<String, dynamic>>> getAll(
     String table, {
@@ -19,15 +16,14 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
       for (final entry in filters.entries) {
         query = query.eq(entry.key, entry.value);
       }
-    } else {
-        query = query.eq("user_id", client.auth.currentUser!.id);
+    }
+    final userId = client.auth.currentUser?.id;
+    if (userId != null) {
+      query = query.eq("user_id", userId);
     }
 
     if (orderBy != null) {
-      query = query.order(
-        orderBy,
-        ascending: ascending,
-      );
+      query = query.order(orderBy, ascending: ascending);
     }
 
     if (limit != null) {
@@ -38,7 +34,6 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
 
     return List<Map<String, dynamic>>.from(response);
   }
-
 
   Future<Map<String, dynamic>?> getSingle(
     String table, {
@@ -51,6 +46,9 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
         query = query.eq(entry.key, entry.value);
       }
     }
+    if (client.auth.currentUser?.id != null) {
+      query = query.eq("user_id", client.auth.currentUser!.id);
+    }
 
     return await query.maybeSingle();
   }
@@ -59,11 +57,7 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
     String table,
     Map<String, dynamic> data,
   ) async {
-    final response = await client
-        .from(table)
-        .insert(data)
-        .select()
-        .single();
+    final response = await client.from(table).insert(data).select().single();
 
     return response;
   }
@@ -72,10 +66,7 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
     String table,
     List<Map<String, dynamic>> data,
   ) async {
-    final response = await client
-        .from(table)
-        .insert(data)
-        .select();
+    final response = await client.from(table).insert(data).select();
 
     return List<Map<String, dynamic>>.from(response);
   }
@@ -90,10 +81,11 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
     for (final entry in filters.entries) {
       query = query.eq(entry.key, entry.value);
     }
+    if (client.auth.currentUser?.id != null) {
+      query = query.eq("user_id", client.auth.currentUser!.id);
+    }
 
-    final response = await query
-        .select()
-        .single();
+    final response = await query.select().single();
 
     return response;
   }
@@ -107,6 +99,9 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
     for (final entry in filters.entries) {
       query = query.eq(entry.key, entry.value);
     }
+    if (client.auth.currentUser?.id != null) {
+      query = query.eq("user_id", client.auth.currentUser!.id);
+    }
 
     await query;
   }
@@ -118,10 +113,7 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
   }) async {
     final response = await client
         .from(table)
-        .upsert(
-          data,
-          onConflict: onConflict,
-        )
+        .upsert(data, onConflict: onConflict)
         .select()
         .single();
 
@@ -132,9 +124,6 @@ class SupabaseDatabaseRepository extends SupabaseRepository {
     String functionName, {
     Map<String, dynamic>? params,
   }) async {
-    return await client.rpc(
-      functionName,
-      params: params,
-    );
+    return await client.rpc(functionName, params: params);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus_flow/features/settings/presentation/widget/settings_bottom_sheet.dart';
+import 'package:focus_flow/features/tasks/presentation/widget/add_task_dialog.dart';
 
 class DesktopNavigation extends StatefulWidget {
   final List<Widget> pages;
@@ -8,6 +9,7 @@ class DesktopNavigation extends StatefulWidget {
   final Function(int) onTap;
   final bool isMenuOpen;
   final VoidCallback onToggleMenu;
+  final VoidCallback? onAddTask;
 
   const DesktopNavigation({
     super.key,
@@ -17,6 +19,7 @@ class DesktopNavigation extends StatefulWidget {
     required this.onTap,
     this.isMenuOpen = false,
     required this.onToggleMenu,
+    this.onAddTask,
   });
 
   @override
@@ -109,7 +112,11 @@ class _DesktopNavigationState extends State<DesktopNavigation> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
-                            // TODO: Show task creation modal
+                            if (widget.onAddTask != null) {
+                              widget.onAddTask!();
+                            } else {
+                              showAddTaskModal(context);
+                            }
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12.0),

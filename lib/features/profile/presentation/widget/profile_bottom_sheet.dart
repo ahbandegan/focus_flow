@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/services/settings_preferences_service.dart';
@@ -32,6 +35,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _audioPlayer = AudioPlayer();
 
   bool _isSignUp = false;
   bool _isLoading = false;
@@ -40,9 +44,22 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
 
   @override
   void dispose() {
+    _audioPlayer.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _playSound(String name) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
+    try {
+      final soundEnabled = di<SettingsPreferencesService>().soundEnabled;
+      if (!soundEnabled) return;
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('audio/$name.mp3'));
+    } catch (_) {
+      // Ignored if sound device is unavailable or in test environment
+    }
   }
 
   String _mapAuthError(Object error) {
@@ -50,18 +67,105 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
       final msg = error.message.toLowerCase();
       if (msg.contains('invalid login credentials') ||
           msg.contains('invalid grant')) {
-        return 'ایمیل یا رمز عبور اشتباه است.';
+        return 'Invalid email or password.';
       } else if (msg.contains('user already registered') ||
           msg.contains('already exists')) {
-        return 'کاربری با این مشخصات قبلاً ثبت‌نام شده است.';
+        return 'User with these credentials already exists.';
       } else if (msg.contains('password should be at least')) {
-        return 'رمز عبور باید حداقل ۶ کاراکتر باشد.';
+        return 'Password must be at least 6 characters.';
       } else if (msg.contains('invalid email')) {
-        return 'فرمت ایمیل وارد شده نامعتبر است.';
+        return 'Please enter a valid email address.';
       }
       return error.message;
     }
-    return 'خطایی در ارتباط با سرور رخ داد. لطفاً اتصال اینترنت خود را بررسی کنید.';
+    return 'An error occurred connecting to the server. Please check your internet connection.';
+  }
+
+  Future<void> _showEmailVerificationModal(BuildContext context, String email) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        final colorScheme = Theme.of(dialogCtx).colorScheme;
+        final textTheme = Theme.of(dialogCtx).textTheme;
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.mark_email_unread_outlined,
+                  size: 44,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Verify Your Email',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'A verification link has been sent to:',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  email,
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Please check your inbox (and spam folder) and confirm your email address before logging in.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: colorScheme.outline,
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(),
+                child: const Text('Go to Sign In'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _submitAuth() async {
@@ -77,47 +181,70 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
 
     try {
       final authRepo = di<SupabaseAuthRepository>();
-      final AuthResponse response;
 
       if (_isSignUp) {
-        response = await authRepo.signUp(
+        await authRepo.signUp(
           email: email,
           password: password,
         );
+
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Play warning/info sound to alert the user to check their email
+        await _playSound('warning');
+
+        // Show Email Verification Modal
+        if (mounted) {
+          await _showEmailVerificationModal(context, email);
+        }
+
+        // Switch back to Sign In tab and clear password
+        if (mounted) {
+          setState(() {
+            _isSignUp = false;
+            _passwordController.clear();
+            _errorMessage = null;
+          });
+        }
       } else {
-        response = await authRepo.signIn(
+        final response = await authRepo.signIn(
           email: email,
           password: password,
         );
-      }
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      final userId = response.user?.id;
-      final userEmail = response.user?.email ?? email;
+        final userId = response.user?.id;
+        final userEmail = response.user?.email ?? email;
 
-      await context.read<SettingsCubit>().updateLoginSession(
-            email: userEmail,
-            id: userId,
-          );
+        await context.read<SettingsCubit>().updateLoginSession(
+              email: userEmail,
+              id: userId,
+            );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isSignUp
-                  ? 'ثبت‌نام با موفقیت انجام شد و وارد شدید.'
-                  : 'با موفقیت وارد حساب خود شدید.',
+        // Play success sound
+        await _playSound('success');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Signed in successfully.'),
+              backgroundColor: Colors.green.shade700,
             ),
-            backgroundColor: Colors.green.shade700,
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = _mapAuthError(e);
         });
+        // Play error sound
+        await _playSound('error');
       }
     } finally {
       if (mounted) {
@@ -132,19 +259,19 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('خروج از حساب'),
-        content: const Text('آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟'),
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out of your account?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text('انصراف'),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text('خروج'),
+            child: const Text('Log Out'),
           ),
         ],
       ),
@@ -160,10 +287,11 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
 
     if (mounted) {
       await context.read<SettingsCubit>().logout();
+      await _playSound('warning');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('از حساب کاربری خارج شدید.'),
+            content: Text('Logged out successfully.'),
           ),
         );
       }
@@ -239,7 +367,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
           children: [
             Expanded(
               child: Text(
-                'پروفایل کاربری',
+                'User Profile',
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -249,7 +377,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'بستن',
+              tooltip: 'Close',
             ),
           ],
         ),
@@ -271,7 +399,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
 
         // Email
         Text(
-          userEmail ?? 'کاربر مهمان',
+          userEmail ?? 'Guest User',
           style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -299,7 +427,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
               ),
               const SizedBox(width: 6),
               Text(
-                'حساب فعال و متصل',
+                'Active & Connected',
                 style: textTheme.bodySmall?.copyWith(
                   color: Colors.green.shade800,
                   fontWeight: FontWeight.w600,
@@ -325,15 +453,15 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Icons.email_outlined, color: colorScheme.primary),
-                  title: const Text('آدرس ایمیل'),
-                  subtitle: Text(userEmail ?? 'تعریف نشده'),
+                  title: const Text('Email Address'),
+                  subtitle: Text(userEmail ?? 'Not set'),
                 ),
                 if (userId != null) ...[
                   const Divider(height: 1),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.fingerprint, color: colorScheme.primary),
-                    title: const Text('شناسه کاربر'),
+                    title: const Text('User ID'),
                     subtitle: Text(
                       userId,
                       style: const TextStyle(fontSize: 12),
@@ -344,8 +472,8 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Icons.cloud_done_outlined, color: colorScheme.primary),
-                  title: const Text('همگام‌سازی ابری'),
-                  subtitle: const Text('پایگاه داده آنلاین فعال است'),
+                  title: const Text('Cloud Sync'),
+                  subtitle: const Text('Online database connected'),
                 ),
               ],
             ),
@@ -368,7 +496,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
             onPressed: _logout,
             icon: const Icon(Icons.logout),
             label: const Text(
-              'خروج از حساب کاربری',
+              'Log Out',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -408,7 +536,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _isSignUp ? 'ثبت‌نام کاربر جدید' : 'ورود به حساب کاربری',
+                      _isSignUp ? 'Create New Account' : 'Sign In to Account',
                       style: textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -421,15 +549,15 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'بستن',
+              tooltip: 'Close',
             ),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           _isSignUp
-              ? 'برای ذخیره اطلاعات و همگام‌سازی فعالیت‌ها حساب جدید بسازید.'
-              : 'برای دسترسی به سشن‌ها و تنظیمات شخصی وارد شوید.',
+              ? 'Create an account to sync and backup your focus sessions.'
+              : 'Sign in to access your sessions and personalized settings.',
           style: textTheme.bodyMedium?.copyWith(
             color: colorScheme.outline,
           ),
@@ -442,12 +570,12 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
             ButtonSegment(
               value: false,
               icon: Icon(Icons.login),
-              label: Text('ورود'),
+              label: Text('Sign In'),
             ),
             ButtonSegment(
               value: true,
               icon: Icon(Icons.person_add_alt_1),
-              label: Text('ثبت‌نام'),
+              label: Text('Sign Up'),
             ),
           ],
           selected: {_isSignUp},
@@ -469,19 +597,49 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: colorScheme.error.withOpacity(0.3)),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.error_outline, color: colorScheme.error),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(
-                      color: colorScheme.onErrorContainer,
-                      fontSize: 13,
+                Row(
+                  children: [
+                    Icon(Icons.error_outline, color: colorScheme.error),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: colorScheme.onErrorContainer,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_isSignUp &&
+                    _errorMessage!.toLowerCase().contains('already exists')) ...[
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        foregroundColor: colorScheme.onErrorContainer,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isSignUp = false;
+                          _errorMessage = null;
+                        });
+                      },
+                      icon: const Icon(Icons.login, size: 16),
+                      label: const Text(
+                        'Sign in instead',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -498,7 +656,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
-                  labelText: 'ایمیل (Email)',
+                  labelText: 'Email',
                   hintText: 'example@email.com',
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
@@ -507,10 +665,10 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return 'لطفاً ایمیل خود را وارد کنید';
+                    return 'Please enter your email';
                   }
                   if (!val.contains('@') || !val.contains('.')) {
-                    return 'لطفاً یک ایمیل معتبر وارد کنید';
+                    return 'Please enter a valid email address';
                   }
                   return null;
                 },
@@ -522,8 +680,8 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _submitAuth(),
                 decoration: InputDecoration(
-                  labelText: 'رمز عبور (Password)',
-                  hintText: 'حداقل ۶ کاراکتر',
+                  labelText: 'Password',
+                  hintText: 'At least 6 characters',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -541,10 +699,10 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
-                    return 'لطفاً رمز عبور را وارد کنید';
+                    return 'Please enter your password';
                   }
                   if (val.length < 6) {
-                    return 'رمز عبور باید حداقل ۶ کاراکتر باشد';
+                    return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
@@ -574,7 +732,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                     ),
                   )
                 : Text(
-                    _isSignUp ? 'ثبت‌نام و ورود' : 'ورود به حساب کاربری',
+                    _isSignUp ? 'Create Account' : 'Sign In',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -582,7 +740,39 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                   ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
+
+        // Bottom toggle link: Already have an account? / Don't have an account?
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _isSignUp
+                  ? 'Already have an account?'
+                  : "Don't have an account?",
+              style: TextStyle(
+                color: colorScheme.outline,
+                fontSize: 14,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isSignUp = !_isSignUp;
+                  _errorMessage = null;
+                });
+              },
+              child: Text(
+                _isSignUp ? 'Sign In' : 'Sign Up',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }

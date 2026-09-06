@@ -4,39 +4,48 @@ sealed class TasksEvent extends Equatable {
   const TasksEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 final class OnLoadTasksEvent extends TasksEvent {}
 
 final class OnAddTaskEvent extends TasksEvent {
   final String title;
+  final String? description;
   final int priority;
   final bool isCompleted;
   final int estimatedPomodoros;
   final int completedPomodoros;
   final int orderIndex;
   final bool isDeleted;
+  final DateTime? dueDate;
+  final TimeOfDay? dueTime;
 
   const OnAddTaskEvent({
     required this.title,
+    this.description,
     required this.priority,
     required this.isCompleted,
     required this.estimatedPomodoros,
     required this.completedPomodoros,
     required this.orderIndex,
     required this.isDeleted,
+    required this.dueDate,
+    required this.dueTime,
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
     title,
+    description,
     priority,
     isCompleted,
     estimatedPomodoros,
     completedPomodoros,
     orderIndex,
     isDeleted,
+    dueDate,
+    dueTime,
   ];
 }
 

@@ -34,17 +34,21 @@ class TaskRepositoryImpl extends TaskRepository {
   @override
   Future<int> insertTask({
     required String title,
+    String? description,
     required int priority,
+    DateTime? dueDate,
     required bool isCompleted,
     required int estimatedPomodoros,
     required int completedPomodoros,
     required int orderIndex,
     required bool isDeleted,
-  }) {
-    _tasksDao.insertTask(
+  }) async {
+    return await _tasksDao.insertTask(
       TasksCompanion.insert(
         title: title,
+        description: Value(description),
         priority: Value(priority),
+        dueDate: Value(dueDate),
         isCompleted: Value(isCompleted),
         estimatedPomodoros: Value(estimatedPomodoros),
         completedPomodoros: Value(completedPomodoros),
@@ -52,7 +56,6 @@ class TaskRepositoryImpl extends TaskRepository {
         isDeleted: Value(isDeleted),
       ),
     );
-    throw UnimplementedError();
   }
 
   @override

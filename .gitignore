@@ -50,3 +50,7 @@ app.*.map.json
 # Ignore main.dart
 lib/main.dart
 **/main.dart
+
+#ignore project.md
+focus_flow.md
+focus_flow_checklist.md
