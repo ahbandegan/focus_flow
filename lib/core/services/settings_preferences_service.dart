@@ -13,6 +13,10 @@ abstract class AppPrefKeys {
   static const String notificationsEnabled = 'prefs_notifications_enabled';
   static const String themeMode = 'prefs_theme_mode';
   static const String dailyTarget = 'prefs_daily_target';
+  static const String isLoggedIn = 'prefs_is_logged_in';
+  static const String userEmail = 'prefs_user_email';
+  static const String userName = 'prefs_user_name';
+  static const String userId = 'prefs_user_id';
 }
 
 class SettingsPreferencesService {
@@ -83,4 +87,56 @@ class SettingsPreferencesService {
   int get dailyTarget => _prefs.getInt(AppPrefKeys.dailyTarget) ?? 8;
   Future<bool> setDailyTarget(int count) =>
       _prefs.setInt(AppPrefKeys.dailyTarget, count);
+
+  // Login status
+  bool get isLoggedIn => _prefs.getBool(AppPrefKeys.isLoggedIn) ?? false;
+  Future<bool> setIsLoggedIn(bool value) =>
+      _prefs.setBool(AppPrefKeys.isLoggedIn, value);
+
+  // User Email
+  String? get userEmail => _prefs.getString(AppPrefKeys.userEmail);
+  Future<bool> setUserEmail(String? email) {
+    if (email == null) {
+      return _prefs.remove(AppPrefKeys.userEmail);
+    }
+    return _prefs.setString(AppPrefKeys.userEmail, email);
+  }
+
+  // User Name
+  String? get userName => _prefs.getString(AppPrefKeys.userName);
+  Future<bool> setUserName(String? name) {
+    if (name == null) {
+      return _prefs.remove(AppPrefKeys.userName);
+    }
+    return _prefs.setString(AppPrefKeys.userName, name);
+  }
+
+  // User ID
+  String? get userId => _prefs.getString(AppPrefKeys.userId);
+  Future<bool> setUserId(String? id) {
+    if (id == null) {
+      return _prefs.remove(AppPrefKeys.userId);
+    }
+    return _prefs.setString(AppPrefKeys.userId, id);
+  }
+
+  // Save session convenience method
+  Future<void> saveUserSession({
+    required String email,
+    String? name,
+    String? id,
+  }) async {
+    await setIsLoggedIn(true);
+    await setUserEmail(email);
+    if (name != null) await setUserName(name);
+    if (id != null) await setUserId(id);
+  }
+
+  // Clear session convenience method
+  Future<void> clearUserSession() async {
+    await setIsLoggedIn(false);
+    await _prefs.remove(AppPrefKeys.userEmail);
+    await _prefs.remove(AppPrefKeys.userName);
+    await _prefs.remove(AppPrefKeys.userId);
+  }
 }

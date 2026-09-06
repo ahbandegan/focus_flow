@@ -8,6 +8,8 @@ class SettingsState extends Equatable {
   final int longBreak;
   final bool soundEnabled;
   final String themeMode;
+  final bool isLoggedIn;
+  final String? userEmail;
 
   const SettingsState({
     required this.focusDuration,
@@ -16,6 +18,8 @@ class SettingsState extends Equatable {
     required this.longBreak,
     required this.soundEnabled,
     required this.themeMode,
+    this.isLoggedIn = false,
+    this.userEmail,
   });
 
   SettingsState copyWith({
@@ -25,6 +29,8 @@ class SettingsState extends Equatable {
     int? longBreak,
     bool? soundEnabled,
     String? themeMode,
+    bool? isLoggedIn,
+    String? userEmail,
   }) {
     return SettingsState(
       focusDuration: focusDuration ?? this.focusDuration,
@@ -33,6 +39,8 @@ class SettingsState extends Equatable {
       longBreak: longBreak ?? this.longBreak,
       soundEnabled: soundEnabled ?? this.soundEnabled,
       themeMode: themeMode ?? this.themeMode,
+      isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      userEmail: userEmail ?? this.userEmail,
     );
   }
 
@@ -44,5 +52,7 @@ class SettingsState extends Equatable {
         longBreak,
         soundEnabled,
         themeMode,
+        isLoggedIn,
+        userEmail,
       ];
 }

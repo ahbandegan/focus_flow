@@ -25,6 +25,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   String get themeMode => _preferencesService.themeMode;
 
   @override
+  bool get isLoggedIn => _preferencesService.isLoggedIn;
+
+  @override
+  String? get userEmail => _preferencesService.userEmail;
+
+  @override
   Future<void> changeTheme(String newTheme) =>
       _preferencesService.setThemeMode(newTheme);
 
@@ -39,4 +45,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> updateRestDuration(int newDuration) =>
       _preferencesService.setRestDuration(newDuration);
+
+  @override
+  Future<void> saveUserSession({
+    required String email,
+    String? name,
+    String? id,
+  }) =>
+      _preferencesService.saveUserSession(
+        email: email,
+        name: name,
+        id: id,
+      );
+
+  @override
+  Future<void> logout() => _preferencesService.clearUserSession();
 }

@@ -17,6 +17,8 @@ class SettingsCubit extends Cubit<SettingsState> {
             longBreak: _repository.longBreak,
             soundEnabled: _repository.soundEnabled,
             themeMode: _repository.themeMode,
+            isLoggedIn: _repository.isLoggedIn,
+            userEmail: _repository.userEmail,
           ),
         );
 
@@ -38,5 +40,19 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> changeTheme(String mode) async {
     await _repository.changeTheme(mode);
     emit(state.copyWith(themeMode: mode));
+  }
+
+  Future<void> updateLoginSession({
+    required String email,
+    String? name,
+    String? id,
+  }) async {
+    await _repository.saveUserSession(email: email, name: name, id: id);
+    emit(state.copyWith(isLoggedIn: true, userEmail: email));
+  }
+
+  Future<void> logout() async {
+    await _repository.logout();
+    emit(state.copyWith(isLoggedIn: false, userEmail: null));
   }
 }

@@ -1,8 +1,8 @@
 import 'package:focus_flow/core/database/database_config.dart';
 import 'package:focus_flow/core/services/notification_service.dart';
 import 'package:focus_flow/core/services/settings_preferences_service.dart';
-import 'package:focus_flow/core/supabase/data/repository/supabase_repository.dart';
-import 'package:focus_flow/core/supabase/domain/repository/supabase_repository.dart';
+import 'package:focus_flow/core/supabase/supabase_auth_repository.dart';
+import 'package:focus_flow/core/supabase/supabase_database_repository.dart';
 import 'package:focus_flow/features/settings/data/repositories/settings_repository.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/tasks/data/repository/task_repository.dart';
@@ -42,7 +42,10 @@ Future<void> initializeDi() async {
   );
 
   di.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
-  di.registerLazySingleton<SupabaseRepository>(
-    () => SupabaseRepositoryImpl(client: di<SupabaseClient>()),
+  di.registerLazySingleton<SupabaseDatabaseRepository>(
+    () => SupabaseDatabaseRepository(client: di<SupabaseClient>()),
+  );
+  di.registerLazySingleton<SupabaseAuthRepository>(
+    () => SupabaseAuthRepository(client: di<SupabaseClient>()),
   );
 }
