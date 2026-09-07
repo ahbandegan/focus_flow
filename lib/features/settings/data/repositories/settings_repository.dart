@@ -19,7 +19,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
   int get longBreak => _preferencesService.longBreak;
 
   @override
+  int get longBreakInterval => _preferencesService.longBreakInterval;
+
+  @override
+  bool get autoStartBreaks => _preferencesService.autoStartBreaks;
+
+  @override
+  bool get autoStartPomodoros => _preferencesService.autoStartPomodoros;
+
+  @override
   bool get soundEnabled => _preferencesService.soundEnabled;
+
+  @override
+  String get soundName => _preferencesService.soundName;
 
   @override
   String get themeMode => _preferencesService.themeMode;

@@ -24,4 +24,8 @@ abstract class TaskRepository {
   });
   Future<int> incrementCompletedPomodoros(int id);
   Future<int> softDeleteTask(int id);
+  Future<Task?> getTaskById(int id);
+  Future<int> upsertTask(TasksCompanion task);
+  Future<void> upsertTasks(List<TasksCompanion> tasks);
+  Stream<List<Task>> watchActiveTasks();
 }

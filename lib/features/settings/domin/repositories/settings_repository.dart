@@ -3,7 +3,11 @@ abstract class SettingsRepository {
   int get restDuration;
   int get shortBreak;
   int get longBreak;
+  int get longBreakInterval;
+  bool get autoStartBreaks;
+  bool get autoStartPomodoros;
   bool get soundEnabled;
+  String get soundName;
   String get themeMode;
   bool get isLoggedIn;
   String? get userEmail;

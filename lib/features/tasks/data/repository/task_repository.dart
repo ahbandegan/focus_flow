@@ -71,4 +71,21 @@ class TaskRepositoryImpl extends TaskRepository {
 
   @override
   Future<bool> updateTask(Task task) async => await _tasksDao.updateTask(task);
+
+  @override
+  Future<Task?> getTaskById(int id) async => await _tasksDao.getTaskById(id);
+
+  @override
+  Future<int> upsertTask(TasksCompanion task) async =>
+      await _tasksDao.upsertTask(task);
+
+  @override
+  Future<void> upsertTasks(List<TasksCompanion> tasks) async {
+    for (final task in tasks) {
+      await _tasksDao.upsertTask(task);
+    }
+  }
+
+  @override
+  Stream<List<Task>> watchActiveTasks() => _tasksDao.watchActiveTasks();
 }

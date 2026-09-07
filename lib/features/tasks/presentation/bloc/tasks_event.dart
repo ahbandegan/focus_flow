@@ -118,3 +118,14 @@ final class OnFilterTasksEvent extends TasksEvent {
   @override
   List<Object> get props => [isCompleted, priority, searchQuery];
 }
+
+final class OnSyncTasksEvent extends TasksEvent {}
+
+final class OnConnectivityChangedEvent extends TasksEvent {
+  final bool isConnected;
+
+  const OnConnectivityChangedEvent({required this.isConnected});
+
+  @override
+  List<Object> get props => [isConnected];
+}

@@ -130,7 +130,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.4),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -410,9 +410,9 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.12),
+            color: Colors.green.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.green.withOpacity(0.3)),
+            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -443,9 +443,9 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+            side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
           ),
-          color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
@@ -595,7 +595,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
             decoration: BoxDecoration(
               color: colorScheme.errorContainer,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.error.withOpacity(0.3)),
+              border: Border.all(color: colorScheme.error.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
