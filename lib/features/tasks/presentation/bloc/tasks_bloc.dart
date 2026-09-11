@@ -12,9 +12,7 @@ part 'tasks_state.dart';
 class TasksBloc extends Bloc<TasksEvent, TasksState> {
   final TaskRepository taskRepository;
 
-  TasksBloc({
-    required this.taskRepository,
-  }) : super(TasksInitialState()) {
+  TasksBloc({required this.taskRepository}) : super(TasksInitialState()) {
     on<OnLoadTasksEvent>(_onLoadTasks);
     on<OnAddTaskEvent>(_onAddTask);
     on<OnUpdateTaskEvent>(_onUpdateTask);
@@ -34,6 +32,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
     Emitter<TasksState> emit,
   ) async {
     try {
+      emit(const TasksSuccessMessageState(data: "Tasks loaded successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -69,6 +68,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Task added successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -93,6 +93,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Task updated successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -128,6 +129,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Task deleted successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -152,6 +154,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Task completed successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -176,6 +179,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Task restored successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -190,8 +194,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
     Emitter<TasksState> emit,
   ) async {
     try {
-      final result =
-          await taskRepository.incrementCompletedPomodoros(event.id);
+      final result = await taskRepository.incrementCompletedPomodoros(event.id);
       if (result < 0) {
         emit(
           TasksErrorState(
@@ -201,6 +204,7 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      emit(const TasksSuccessMessageState(data: "Pomodoro session recorded successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -230,11 +234,12 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
   // HELPER METHODS
   // ===========================================================================
   Future<void> _loadAndEmitTasks(Emitter<TasksState> emit) async {
-    final tasks = await taskRepository.featchAll();
-    emit(
-      TasksSuccessState(
-        data: List<Task>.unmodifiable(tasks),
-      ),
-    );
+    final tasks = List<Task>.from(await taskRepository.featchAll());
+    tasks
+      ..sort((a, b) => b.priority.compareTo(a.priority))
+      ..sort(
+        (a, b) => (a.isCompleted ? 1 : 0).compareTo(b.isCompleted ? 1 : 0),
+      );
+    emit(TasksSuccessState(data: List<Task>.unmodifiable(tasks)));
   }
 }

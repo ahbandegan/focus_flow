@@ -67,3 +67,22 @@ class PomodoroState extends Equatable {
         selectedTask,
       ];
 }
+
+final class PomodoroSuccessMessageState extends PomodoroState {
+  final String message;
+  String get data => message;
+
+  const PomodoroSuccessMessageState({
+    required this.message,
+    required super.currentSeconds,
+    required super.totalSeconds,
+    required super.mode,
+    required super.status,
+    required super.completedCycles,
+    super.selectedTask,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, message];
+}
+

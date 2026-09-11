@@ -53,3 +53,14 @@ final class StatisticsErrorState extends StatisticsState {
   @override
   List<Object?> get props => [message];
 }
+
+final class StatisticsSuccessMessageState extends StatisticsState {
+  final String message;
+  String get data => message;
+
+  const StatisticsSuccessMessageState({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+

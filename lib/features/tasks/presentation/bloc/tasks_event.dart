@@ -105,16 +105,12 @@ final class OnIincrementCompletedPomodorosEvent extends TasksEvent {
 }
 
 final class OnFilterTasksEvent extends TasksEvent {
-  final bool isCompleted;
-  final int priority;
-  final String searchQuery;
+  final bool? isCompleted;
+  final int? priority;
+  final String? searchQuery;
 
-  const OnFilterTasksEvent({
-    required this.isCompleted,
-    required this.priority,
-    required this.searchQuery,
-  });
+  const OnFilterTasksEvent({this.isCompleted, this.priority, this.searchQuery});
 
   @override
-  List<Object> get props => [isCompleted, priority, searchQuery];
+  List<Object?> get props => [isCompleted, priority, searchQuery];
 }

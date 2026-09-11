@@ -56,3 +56,24 @@ class SettingsState extends Equatable {
         userEmail,
       ];
 }
+
+final class SettingsSuccessMessageState extends SettingsState {
+  final String message;
+  String get data => message;
+
+  const SettingsSuccessMessageState({
+    required this.message,
+    required super.focusDuration,
+    required super.restDuration,
+    required super.shortBreak,
+    required super.longBreak,
+    required super.soundEnabled,
+    required super.themeMode,
+    super.isLoggedIn,
+    super.userEmail,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, message];
+}
+

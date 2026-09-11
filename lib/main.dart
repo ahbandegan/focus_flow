@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/services/notification_service.dart';
-import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/core/widgets/desktop_navigation.dart';
 import 'package:focus_flow/features/home/presentation/page/home_page.dart';
+import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:focus_flow/features/settings/presentation/widget/settings_bottom_sheet.dart';
+import 'package:focus_flow/features/tasks/presentation/pages/tasks_page.dart';
 import 'package:focus_flow/initialize_dependensies.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'core/widgets/mobile_navigation.dart';
-import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/pomodoro/presentation/bloc/pomodoro_bloc.dart';
 import 'features/statistics/presentation/bloc/statistics_bloc.dart';
 import 'features/tasks/presentation/bloc/tasks_bloc.dart';
@@ -35,9 +35,8 @@ void main() async {
           create: (context) => SettingsCubit(di<SettingsRepository>()),
         ),
         BlocProvider(
-          create: (context) => TasksBloc(
-            taskRepository: di(),
-          )..add(OnLoadTasksEvent()),
+          create: (context) =>
+              TasksBloc(taskRepository: di())..add(OnLoadTasksEvent()),
         ),
         BlocProvider(
           create: (context) => PomodoroBloc(
@@ -48,16 +47,9 @@ void main() async {
           ),
         ),
         BlocProvider(
-          create: (context) => StatisticsBloc(
-            pomodoroRepository: di(),
-            taskRepository: di(),
-          )..add(LoadStatisticsEvent()),
-        ),
-        BlocProvider(
-          create: (context) => HomeBloc(
-            taskRepository: di(),
-            settingsRepository: di(),
-          )..add(LoadHomeDataEvent()),
+          create: (context) =>
+              StatisticsBloc(pomodoroRepository: di(), taskRepository: di())
+                ..add(LoadStatisticsEvent()),
         ),
       ],
       child: const FocusFlowApp(),
@@ -127,7 +119,7 @@ class InitialPage extends StatefulWidget {
 class _InitialPageState extends State<InitialPage> {
   List<Widget> pages = [
     HomePage(settingsRepository: di<SettingsRepository>()),
-    HomePage(settingsRepository: di<SettingsRepository>()),
+    TasksPage(settingsRepository: di<SettingsRepository>()),
     HomePage(settingsRepository: di<SettingsRepository>()),
     HomePage(settingsRepository: di<SettingsRepository>()),
   ];

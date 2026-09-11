@@ -48,6 +48,8 @@ final class TasksStreamSuccessState extends TasksState {
 
 final class TasksSuccessMessageState extends TasksState {
   final String data;
+  String get message => data;
+
   const TasksSuccessMessageState({required this.data});
 
   @override

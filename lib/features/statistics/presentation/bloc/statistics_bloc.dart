@@ -24,6 +24,15 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
   ) async {
     emit(StatisticsLoadingState());
     try {
+      if (event is RefreshStatisticsEvent) {
+        emit(const StatisticsSuccessMessageState(
+          message: "Statistics refreshed successfully",
+        ));
+      } else {
+        emit(const StatisticsSuccessMessageState(
+          message: "Statistics loaded successfully",
+        ));
+      }
       final now = DateTime.now();
       final startOfToday = DateTime(now.year, now.month, now.day);
       final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);

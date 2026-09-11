@@ -158,7 +158,7 @@ void main() {
 
     await expectLater(
       tasksBloc.stream,
-      emits(
+      emitsThrough(
         predicate<TasksState>((state) {
           return state is TasksSuccessState &&
               state.data.length == 1 &&
@@ -186,7 +186,7 @@ void main() {
 
     await expectLater(
       tasksBloc.stream,
-      emits(
+      emitsThrough(
         predicate<TasksState>((state) {
           return state is TasksSuccessState &&
               state.data.length == 1 &&
@@ -215,7 +215,7 @@ void main() {
 
     await expectLater(
       tasksBloc.stream,
-      emits(
+      emitsThrough(
         predicate<TasksState>((state) {
           return state is TasksSuccessState &&
               state.data.first.isCompleted == true;
@@ -242,7 +242,7 @@ void main() {
 
     await expectLater(
       tasksBloc.stream,
-      emits(
+      emitsThrough(
         predicate<TasksState>((state) {
           return state is TasksSuccessState &&
               state.data.first.isDeleted == true;

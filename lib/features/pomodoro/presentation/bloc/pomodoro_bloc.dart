@@ -95,13 +95,23 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
   void _onReset(PomodoroResetEvent event, Emitter<PomodoroState> emit) {
     _timer?.cancel();
     final duration = _getDurationForMode(state.mode);
+    final newState = state.copyWith(
+      currentSeconds: duration,
+      totalSeconds: duration,
+      status: PomodoroStatus.initial,
+    );
     emit(
-      state.copyWith(
-        currentSeconds: duration,
-        totalSeconds: duration,
-        status: PomodoroStatus.initial,
+      PomodoroSuccessMessageState(
+        message: "Timer reset successfully",
+        currentSeconds: newState.currentSeconds,
+        totalSeconds: newState.totalSeconds,
+        mode: newState.mode,
+        status: newState.status,
+        completedCycles: newState.completedCycles,
+        selectedTask: newState.selectedTask,
       ),
     );
+    emit(newState);
   }
 
   Future<void> _onTick(
@@ -181,6 +191,22 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
 
     final nextDuration = _getDurationForMode(nextMode);
 
+    final completionMessage = isFocus
+        ? "Focus session completed! Great job."
+        : "Break session completed! Ready to focus.";
+
+    emit(
+      PomodoroSuccessMessageState(
+        message: completionMessage,
+        currentSeconds: nextDuration,
+        totalSeconds: nextDuration,
+        mode: nextMode,
+        status: PomodoroStatus.initial,
+        completedCycles: nextCycles,
+        selectedTask: state.selectedTask,
+      ),
+    );
+
     emit(
       state.copyWith(
         currentSeconds: nextDuration,
@@ -207,14 +233,24 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
     final nextMode = isFocus ? PomodoroMode.shortBreak : PomodoroMode.focus;
     final nextDuration = _getDurationForMode(nextMode);
 
+    final newState = state.copyWith(
+      currentSeconds: nextDuration,
+      totalSeconds: nextDuration,
+      mode: nextMode,
+      status: PomodoroStatus.initial,
+    );
     emit(
-      state.copyWith(
-        currentSeconds: nextDuration,
-        totalSeconds: nextDuration,
-        mode: nextMode,
-        status: PomodoroStatus.initial,
+      PomodoroSuccessMessageState(
+        message: "Session skipped successfully",
+        currentSeconds: newState.currentSeconds,
+        totalSeconds: newState.totalSeconds,
+        mode: newState.mode,
+        status: newState.status,
+        completedCycles: newState.completedCycles,
+        selectedTask: newState.selectedTask,
       ),
     );
+    emit(newState);
   }
 
   void _onSwitchMode(
@@ -223,25 +259,53 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
   ) {
     _timer?.cancel();
     final duration = _getDurationForMode(event.mode);
+    final modeLabel = switch (event.mode) {
+      PomodoroMode.focus => "Focus",
+      PomodoroMode.shortBreak => "Short Break",
+      PomodoroMode.longBreak => "Long Break",
+    };
+    final newState = state.copyWith(
+      currentSeconds: duration,
+      totalSeconds: duration,
+      mode: event.mode,
+      status: PomodoroStatus.initial,
+    );
     emit(
-      state.copyWith(
-        currentSeconds: duration,
-        totalSeconds: duration,
-        mode: event.mode,
-        status: PomodoroStatus.initial,
+      PomodoroSuccessMessageState(
+        message: "Switched to $modeLabel mode",
+        currentSeconds: newState.currentSeconds,
+        totalSeconds: newState.totalSeconds,
+        mode: newState.mode,
+        status: newState.status,
+        completedCycles: newState.completedCycles,
+        selectedTask: newState.selectedTask,
       ),
     );
+    emit(newState);
   }
 
   void _onSelectTask(
     PomodoroSelectTaskEvent event,
     Emitter<PomodoroState> emit,
   ) {
+    final newState = state.copyWith(
+      selectedTask: event.task,
+      clearSelectedTask: event.task == null,
+    );
+    final message = event.task != null
+        ? "Task '${event.task!.title}' linked to session"
+        : "Task unlinked from session";
     emit(
-      state.copyWith(
-        selectedTask: event.task,
-        clearSelectedTask: event.task == null,
+      PomodoroSuccessMessageState(
+        message: message,
+        currentSeconds: newState.currentSeconds,
+        totalSeconds: newState.totalSeconds,
+        mode: newState.mode,
+        status: newState.status,
+        completedCycles: newState.completedCycles,
+        selectedTask: newState.selectedTask,
       ),
     );
+    emit(newState);
   }
 }

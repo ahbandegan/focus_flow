@@ -2,7 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/utils/format_minutes.dart';
-import 'package:focus_flow/features/home/presentation/bloc/home_bloc.dart';
+import 'package:focus_flow/core/utils/show_snackbar.dart';
 import 'package:focus_flow/features/home/presentation/widget/task_card.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/tasks/presentation/bloc/tasks_bloc.dart';
@@ -29,7 +29,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TasksBloc, TasksState>(
+    return BlocConsumer<TasksBloc, TasksState>(
+      buildWhen: (previous, current) => current is! TasksSuccessMessageState,
       builder: (context, state) {
         if (state is TasksSuccessState) {
           final now = DateTime.now();
@@ -162,7 +163,9 @@ class HomePage extends StatelessWidget {
                           ),
                         );
                       },
-                      onStart: (id) {},
+                      onStart: (id) {
+                        // todo start task
+                      },
                       onDelete: (id) {
                         context.read<TasksBloc>().add(
                           OnDeleteTaskEvent(id: id),
@@ -175,16 +178,27 @@ class HomePage extends StatelessWidget {
             ],
           );
         }
-        if (state is TasksErrorState) {
-          return Center(
-            child: Text(
-              state.error.toString(),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          );
-        }
 
         return Center(child: CircularProgressIndicator());
+      },
+      listener: (BuildContext context, TasksState state) {
+        if (state is TasksSuccessMessageState) {
+          if (_settingsRepository.soundEnabled) {
+            player.play(AssetSource('audio/success.mp3'));
+          }
+          showSnackbar(context: context, msg: state.data, isError: false);
+        }
+
+        if (state is TasksErrorState) {
+          if (_settingsRepository.soundEnabled) {
+            player.play(AssetSource('audio/error.mp3'));
+          }
+          showSnackbar(
+            context: context,
+            msg: "err: ${state.error}",
+            isError: true,
+          );
+        }
       },
     );
   }
