@@ -32,14 +32,14 @@ final class HomeLoadedState extends HomeState {
 
   @override
   List<Object?> get props => [
-        todayTasks,
-        completedTasksCount,
-        totalTasksCount,
-        completedPomodorosCount,
-        estimatedPomodorosCount,
-        focusTimeMinutes,
-        greeting,
-      ];
+    todayTasks,
+    completedTasksCount,
+    totalTasksCount,
+    completedPomodorosCount,
+    estimatedPomodorosCount,
+    focusTimeMinutes,
+    greeting,
+  ];
 }
 
 final class HomeErrorState extends HomeState {

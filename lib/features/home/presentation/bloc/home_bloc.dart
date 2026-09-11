@@ -11,10 +11,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final TaskRepository taskRepository;
   final SettingsRepository settingsRepository;
 
-  HomeBloc({
-    required this.taskRepository,
-    required this.settingsRepository,
-  }) : super(HomeInitialState()) {
+  HomeBloc({required this.taskRepository, required this.settingsRepository})
+    : super(HomeInitialState()) {
     on<LoadHomeDataEvent>(_onLoadData);
     on<RefreshHomeDataEvent>(_onLoadData);
   }
@@ -30,10 +28,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  Future<void> _onLoadData(
-    HomeEvent event,
-    Emitter<HomeState> emit,
-  ) async {
+  Future<void> _onLoadData(HomeEvent event, Emitter<HomeState> emit) async {
     emit(HomeLoadingState());
     try {
       final allTasks = await taskRepository.featchAll();
@@ -47,23 +42,21 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             targetDate.day == now.day;
       }).toList();
 
-      final completedTasks =
-          todayTasks.where((element) => element.isCompleted).toList();
+      final completedTasks = todayTasks
+          .where((element) => element.isCompleted)
+          .toList();
 
       final pomodorosCount = todayTasks.fold<int>(
         0,
-        (previousValue, element) =>
-            previousValue + element.estimatedPomodoros,
+        (previousValue, element) => previousValue + element.estimatedPomodoros,
       );
 
       final pomodorosCompleteCount = todayTasks.fold<int>(
         0,
-        (previousValue, element) =>
-            previousValue + element.completedPomodoros,
+        (previousValue, element) => previousValue + element.completedPomodoros,
       );
 
-      final focusTime =
-          pomodorosCount * settingsRepository.focusDuration;
+      final focusTime = pomodorosCount * settingsRepository.focusDuration;
 
       emit(
         HomeLoadedState(

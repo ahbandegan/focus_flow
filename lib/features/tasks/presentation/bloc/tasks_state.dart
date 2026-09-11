@@ -21,33 +21,21 @@ final class TasksErrorState extends TasksState {
 
 final class TasksSuccessState extends TasksState {
   final List<Task> data;
-  final bool isSyncing;
-  final bool isOnline;
-  final int pendingSyncCount;
 
   const TasksSuccessState({
     required this.data,
-    this.isSyncing = false,
-    this.isOnline = true,
-    this.pendingSyncCount = 0,
   });
 
   TasksSuccessState copyWith({
     List<Task>? data,
-    bool? isSyncing,
-    bool? isOnline,
-    int? pendingSyncCount,
   }) {
     return TasksSuccessState(
       data: data ?? this.data,
-      isSyncing: isSyncing ?? this.isSyncing,
-      isOnline: isOnline ?? this.isOnline,
-      pendingSyncCount: pendingSyncCount ?? this.pendingSyncCount,
     );
   }
 
   @override
-  List<Object?> get props => [data, isSyncing, isOnline, pendingSyncCount];
+  List<Object?> get props => [data];
 }
 
 final class TasksStreamSuccessState extends TasksState {

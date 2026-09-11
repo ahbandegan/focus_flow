@@ -9,7 +9,6 @@ import 'daos/tasks_dao.dart';
 import 'daos/subtasks_dao.dart';
 import 'daos/tags_dao.dart';
 import 'daos/pomodoro_dao.dart';
-export 'supabase_mappers.dart';
 
 part 'app_database.g.dart';
 

@@ -5,9 +5,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/database/app_database.dart';
-import 'package:focus_flow/core/services/connectivity_service.dart';
 import 'package:focus_flow/core/services/notification_service.dart';
-import 'package:focus_flow/core/supabase/supabase_database_repository.dart';
 import 'package:focus_flow/features/pomodoro/domain/repositories/pomodoro_repository.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/tasks/domain/repositories/task_repository.dart';
@@ -19,8 +17,6 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
   final PomodoroRepository pomodoroRepository;
   final TaskRepository taskRepository;
   final SettingsRepository settingsRepository;
-  final SupabaseDatabaseRepository supabaseDatabaseRepository;
-  final ConnectivityService connectivityService;
   final NotificationService notificationService;
   final AudioPlayer audioPlayer;
 
@@ -31,8 +27,6 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
     required this.pomodoroRepository,
     required this.taskRepository,
     required this.settingsRepository,
-    required this.supabaseDatabaseRepository,
-    required this.connectivityService,
     required this.notificationService,
     AudioPlayer? audioPlayer,
   })  : audioPlayer = audioPlayer ?? AudioPlayer(),
@@ -168,36 +162,9 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
       isCompleted: const drift.Value(true),
     );
 
-    final sessionId = await pomodoroRepository.insertSession(sessionCompanion);
+    await pomodoroRepository.insertSession(sessionCompanion);
 
-    // 4. Sync session to Supabase if logged in & online
-    if (settingsRepository.isLoggedIn) {
-      final isOnline = await connectivityService.isConnected;
-      if (isOnline) {
-        try {
-          final userId =
-              supabaseDatabaseRepository.client.auth.currentUser?.id;
-          final remotePayload = {
-            'id': sessionId,
-            'task_id': state.selectedTask?.id,
-            'session_type': state.mode.name,
-            'target_duration_minutes': state.totalSeconds ~/ 60,
-            'actual_duration_seconds': durationSeconds,
-            'start_time': start.toUtc().toIso8601String(),
-            'end_time': now.toUtc().toIso8601String(),
-            'is_completed': true,
-            'created_at': now.toUtc().toIso8601String(),
-          };
-          if (userId != null) remotePayload['user_id'] = userId;
-          await supabaseDatabaseRepository.upsert(
-            'pomodoro_sessions',
-            remotePayload,
-          );
-        } catch (_) {}
-      }
-    }
-
-    // 5. Increment task completed pomodoros if a task was attached
+    // 4. Increment task completed pomodoros if a task was attached
     if (isFocus && state.selectedTask != null) {
       try {
         await taskRepository.incrementCompletedPomodoros(state.selectedTask!.id);

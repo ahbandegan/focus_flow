@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/utils/format_minutes.dart';
+import 'package:focus_flow/features/home/presentation/bloc/home_bloc.dart';
 import 'package:focus_flow/features/home/presentation/widget/task_card.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/tasks/presentation/bloc/tasks_bloc.dart';
@@ -154,10 +155,19 @@ class HomePage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
                     child: TaskCard(
                       task: e,
-                      onCheck: (id, value) {},
+                      onCheck: (value) {
+                        context.read<TasksBloc>().add(
+                          OnUpdateTaskEvent(
+                            task: e.copyWith(isCompleted: value),
+                          ),
+                        );
+                      },
                       onStart: (id) {},
-                      onDelete: (id) {},
-                      onEdit: (id) {},
+                      onDelete: (id) {
+                        context.read<TasksBloc>().add(
+                          OnDeleteTaskEvent(id: id),
+                        );
+                      },
                     ),
                   ),
                 ),

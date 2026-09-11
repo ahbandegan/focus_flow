@@ -47,10 +47,6 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
-# Ignore main.dart
-lib/main.dart
-**/main.dart
-
 #ignore project.md
 focus_flow.md
 focus_flow_checklist.md
