@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:focus_flow/core/database/app_database.dart';
 import 'package:focus_flow/core/services/notification_service.dart';
 import 'package:focus_flow/core/widgets/desktop_navigation.dart';
 import 'package:focus_flow/features/home/presentation/page/home_page.dart';
+import 'package:focus_flow/features/pomodoro/presentation/page/pomodoro_page.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
 import 'package:focus_flow/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:focus_flow/features/settings/presentation/widget/settings_bottom_sheet.dart';
+import 'package:focus_flow/features/statistics/presentation/pages/statistics_page.dart';
 import 'package:focus_flow/features/tasks/presentation/pages/tasks_page.dart';
 import 'package:focus_flow/initialize_dependensies.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,8 +38,10 @@ void main() async {
           create: (context) => SettingsCubit(di<SettingsRepository>()),
         ),
         BlocProvider(
-          create: (context) =>
-              TasksBloc(taskRepository: di())..add(OnLoadTasksEvent()),
+          create: (context) => TasksBloc(
+            taskRepository: di(),
+            notificationService: di(),
+          )..add(OnLoadTasksEvent()),
         ),
         BlocProvider(
           create: (context) => PomodoroBloc(
@@ -117,14 +122,37 @@ class InitialPage extends StatefulWidget {
 }
 
 class _InitialPageState extends State<InitialPage> {
-  List<Widget> pages = [
-    HomePage(settingsRepository: di<SettingsRepository>()),
-    TasksPage(settingsRepository: di<SettingsRepository>()),
-    HomePage(settingsRepository: di<SettingsRepository>()),
-    HomePage(settingsRepository: di<SettingsRepository>()),
-  ];
   int currentIndex = 0;
-  bool isDesktopMenuOpen = false;
+  bool isDesktopMenuOpen = true;
+  Task? selectedTask;
+
+  List<Widget> get pages => [
+    HomePage(
+      settingsRepository: di<SettingsRepository>(),
+      onPomodoroNav: goToPomodoro,
+    ),
+    TasksPage(
+      settingsRepository: di<SettingsRepository>(),
+      onPomodoroNav: goToPomodoro,
+    ),
+    PomodoroPage(
+      settingsRepository: di<SettingsRepository>(),
+      task: selectedTask,
+      unLinckTask: () {
+        setState(() {
+          selectedTask = null;
+        });
+      },
+    ),
+    const StatisticsPage(),
+  ];
+
+  void Function(Task?) get goToPomodoro => (task) {
+    setState(() {
+      selectedTask = task;
+      currentIndex = 2;
+    });
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -158,31 +186,57 @@ class _InitialPageState extends State<InitialPage> {
           const SizedBox(width: 10),
         ],
       ),
-      body: !isDesktop
-          ? MobileNavigation(
-              pages: pages,
-              size: size,
-              currentIndex: currentIndex,
-              onTap: onTap,
-              onAddTask: () => showAddTaskModal(context),
-            )
-          : DesktopNavigation(
-              pages: pages,
-              size: size,
-              currentIndex: currentIndex,
-              onTap: onTap,
-              isMenuOpen: isDesktopMenuOpen,
-              onToggleMenu: () {
-                setState(() {
-                  isDesktopMenuOpen = !isDesktopMenuOpen;
-                });
-              },
-              onAddTask: () => showAddTaskModal(context),
-            ),
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<PomodoroBloc, PomodoroState>(
+            listenWhen: (prev, curr) =>
+                prev.selectedTask?.completedPomodoros !=
+                    curr.selectedTask?.completedPomodoros ||
+                prev.selectedTask?.isCompleted !=
+                    curr.selectedTask?.isCompleted,
+            listener: (context, state) {
+              context.read<TasksBloc>().add(const OnLoadTasksEvent(silent: true));
+            },
+          ),
+          BlocListener<SettingsCubit, SettingsState>(
+            listener: (context, state) {
+              context.read<PomodoroBloc>().add(PomodoroSyncSettingsEvent());
+            },
+          ),
+        ],
+        child: !isDesktop
+            ? MobileNavigation(
+                pages: pages,
+                size: size,
+                currentIndex: currentIndex,
+                onTap: onTap,
+                onAddTask: () => showAddTaskModal(context),
+              )
+            : DesktopNavigation(
+                pages: pages,
+                size: size,
+                currentIndex: currentIndex,
+                onTap: onTap,
+                isMenuOpen: isDesktopMenuOpen,
+                onToggleMenu: () {
+                  setState(() {
+                    isDesktopMenuOpen = !isDesktopMenuOpen;
+                  });
+                },
+                onAddTask: () => showAddTaskModal(context),
+              ),
+      ),
     );
   }
 
-  void onTap(int index) => setState(() {
-    currentIndex = index;
-  });
+  void onTap(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+    if (index == 0 || index == 1) {
+      context.read<TasksBloc>().add(const OnLoadTasksEvent(silent: true));
+    } else if (index == 3) {
+      context.read<StatisticsBloc>().add(RefreshStatisticsEvent());
+    }
+  }
 }

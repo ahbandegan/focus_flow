@@ -30,14 +30,18 @@ class SettingsPreferencesService {
       _prefs.setInt(AppPrefKeys.focusDuration, minutes);
 
   // Rest duration (minutes)
-  int get restDuration => _prefs.getInt(AppPrefKeys.restDuration) ?? 5;
-  Future<bool> setRestDuration(int minutes) =>
-      _prefs.setInt(AppPrefKeys.restDuration, minutes);
+  int get restDuration =>
+      _prefs.getInt(AppPrefKeys.restDuration) ??
+      _prefs.getInt(AppPrefKeys.shortBreak) ??
+      5;
+  Future<bool> setRestDuration(int minutes) async {
+    await _prefs.setInt(AppPrefKeys.shortBreak, minutes);
+    return _prefs.setInt(AppPrefKeys.restDuration, minutes);
+  }
 
   // Short break (minutes)
-  int get shortBreak => _prefs.getInt(AppPrefKeys.shortBreak) ?? 5;
-  Future<bool> setShortBreak(int minutes) =>
-      _prefs.setInt(AppPrefKeys.shortBreak, minutes);
+  int get shortBreak => restDuration;
+  Future<bool> setShortBreak(int minutes) => setRestDuration(minutes);
 
   // Long break (minutes)
   int get longBreak => _prefs.getInt(AppPrefKeys.longBreak) ?? 15;

@@ -50,7 +50,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> updateRestDuration(int minutes) async {
     await _repository.updateRestDuration(minutes);
     _emitWithSuccessMessage(
-      state.copyWith(restDuration: minutes),
+      state.copyWith(restDuration: minutes, shortBreak: minutes),
       "Rest duration updated to $minutes minutes",
     );
   }

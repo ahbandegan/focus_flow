@@ -38,3 +38,5 @@ final class PomodoroSelectTaskEvent extends PomodoroEvent {
 }
 
 final class PomodoroFinishSessionEvent extends PomodoroEvent {}
+
+final class PomodoroSyncSettingsEvent extends PomodoroEvent {}

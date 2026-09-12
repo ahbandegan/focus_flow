@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:focus_flow/core/database/app_database.dart';
 import 'package:focus_flow/core/utils/show_snackbar.dart';
 import 'package:focus_flow/features/home/presentation/widget/task_card.dart';
 import 'package:focus_flow/features/settings/domin/repositories/settings_repository.dart';
@@ -9,7 +10,13 @@ import 'package:focus_flow/features/tasks/presentation/bloc/tasks_bloc.dart';
 class TasksPage extends StatefulWidget {
   final AudioPlayer player = AudioPlayer();
   final SettingsRepository _settingsRepository;
-  TasksPage({super.key, required this._settingsRepository});
+  final void Function(Task?) onPomodoroNav;
+
+  TasksPage({
+    super.key,
+    required this._settingsRepository,
+    required this.onPomodoroNav,
+  });
 
   @override
   State<TasksPage> createState() => _TasksPageState();
@@ -23,10 +30,14 @@ class _TasksPageState extends State<TasksPage> {
   void initState() {
     super.initState();
     selectedValue = filters[0];
+    context.read<TasksBloc>().add(const OnLoadTasksEvent(silent: true));
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isDesktop = size.width >= 600;
+
     return BlocConsumer<TasksBloc, TasksState>(
       buildWhen: (previous, current) => current is! TasksSuccessMessageState,
       builder: (context, state) {
@@ -41,22 +52,35 @@ class _TasksPageState extends State<TasksPage> {
           }).toList();
 
           return ListView(
-            padding: const EdgeInsets.all(30.0),
-            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 30.0 : 16.0,
+              vertical: isDesktop ? 30.0 : 20.0,
+            ),
+            physics: const BouncingScrollPhysics(),
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "All Tasks (${tasks.length})",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      "All Tasks (${tasks.length})",
+                      style: TextStyle(
+                        fontSize: isDesktop ? 30 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  const SizedBox(width: 12),
                   DropdownMenu<String>(
                     onSelected: (value) => setState(() {
                       selectedValue = value;
                     }),
                     initialSelection: selectedValue,
-                    width: 200,
+                    width: isDesktop ? 180 : 135,
+                    textStyle: TextStyle(
+                      fontSize: isDesktop ? 14 : 13,
+                    ),
                     requestFocusOnTap: false,
                     dropdownMenuEntries: [
                       for (String item in filters)
@@ -65,7 +89,7 @@ class _TasksPageState extends State<TasksPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (tasks.isEmpty)
                 Row(
                   children: [
@@ -107,8 +131,8 @@ class _TasksPageState extends State<TasksPage> {
                           ),
                         );
                       },
-                      onStart: (id) {
-                        // todo start task
+                      onStart: () {
+                        widget.onPomodoroNav(e);
                       },
                       onDelete: (id) {
                         context.read<TasksBloc>().add(

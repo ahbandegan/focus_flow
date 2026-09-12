@@ -6,7 +6,7 @@ class TaskCard extends StatelessWidget {
   final Task task;
   final bool isActive; // در صورتی که تایمر پومودورو روی این تسک ران باشد
   final void Function(bool isCompleted) onCheck;
-  final void Function(int id) onStart;
+  final void Function() onStart;
   final void Function(int id) onDelete;
 
   const TaskCard({
@@ -53,7 +53,7 @@ class TaskCard extends StatelessWidget {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => onStart(task.id),
+          onTap: () => onStart(),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
@@ -193,7 +193,7 @@ class TaskCard extends StatelessWidget {
                   onSelected: (value) {
                     switch (value) {
                       case 'play':
-                        onStart(task.id);
+                        onStart();
                         break;
                       case 'edit':
                         showEditTaskModal(context: context, task: task);

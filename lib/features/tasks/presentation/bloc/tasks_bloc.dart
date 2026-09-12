@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_flow/core/database/app_database.dart';
+import 'package:focus_flow/core/services/notification_service.dart';
 import 'package:focus_flow/features/tasks/domain/repositories/task_repository.dart';
 
 part 'tasks_event.dart';
@@ -11,8 +12,12 @@ part 'tasks_state.dart';
 
 class TasksBloc extends Bloc<TasksEvent, TasksState> {
   final TaskRepository taskRepository;
+  final NotificationService? notificationService;
 
-  TasksBloc({required this.taskRepository}) : super(TasksInitialState()) {
+  TasksBloc({
+    required this.taskRepository,
+    this.notificationService,
+  }) : super(TasksInitialState()) {
     on<OnLoadTasksEvent>(_onLoadTasks);
     on<OnAddTaskEvent>(_onAddTask);
     on<OnUpdateTaskEvent>(_onUpdateTask);
@@ -32,7 +37,9 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
     Emitter<TasksState> emit,
   ) async {
     try {
-      emit(const TasksSuccessMessageState(data: "Tasks loaded successfully"));
+      if (!event.silent) {
+        emit(const TasksSuccessMessageState(data: "Tasks loaded successfully"));
+      }
       await _loadAndEmitTasks(emit);
     } catch (e) {
       emit(TasksErrorState(error: Exception(e.toString())));
@@ -68,6 +75,20 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      // Schedule notification if due date is in the future
+      if (event.dueDate != null && event.dueDate!.isAfter(DateTime.now())) {
+        try {
+          await notificationService?.scheduleNotification(
+            id: localId,
+            title: 'Task Reminder: ${event.title}',
+            body: event.description?.isNotEmpty == true
+                ? event.description!
+                : 'It is time to work on "${event.title}".',
+            scheduledDate: event.dueDate!,
+          );
+        } catch (_) {}
+      }
+
       emit(const TasksSuccessMessageState(data: "Task added successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
@@ -91,6 +112,27 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
           ),
         );
         return;
+      }
+
+      final task = event.task;
+      if (task.dueDate != null &&
+          task.dueDate!.isAfter(DateTime.now()) &&
+          !task.isCompleted &&
+          !task.isDeleted) {
+        try {
+          await notificationService?.scheduleNotification(
+            id: task.id,
+            title: 'Task Reminder: ${task.title}',
+            body: task.description?.isNotEmpty == true
+                ? task.description!
+                : 'It is time to work on "${task.title}".',
+            scheduledDate: task.dueDate!,
+          );
+        } catch (_) {}
+      } else {
+        try {
+          await notificationService?.cancelNotification(task.id);
+        } catch (_) {}
       }
 
       emit(const TasksSuccessMessageState(data: "Task updated successfully"));
@@ -129,6 +171,10 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      try {
+        await notificationService?.cancelNotification(id);
+      } catch (_) {}
+
       emit(const TasksSuccessMessageState(data: "Task deleted successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
@@ -154,6 +200,10 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         return;
       }
 
+      try {
+        await notificationService?.cancelNotification(event.id);
+      } catch (_) {}
+
       emit(const TasksSuccessMessageState(data: "Task completed successfully"));
       await _loadAndEmitTasks(emit);
     } catch (e) {
@@ -178,6 +228,24 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
         );
         return;
       }
+
+      try {
+        final task = await taskRepository.getTaskById(event.id);
+        if (task != null &&
+            task.dueDate != null &&
+            task.dueDate!.isAfter(DateTime.now()) &&
+            !task.isCompleted &&
+            !task.isDeleted) {
+          await notificationService?.scheduleNotification(
+            id: task.id,
+            title: 'Task Reminder: ${task.title}',
+            body: task.description?.isNotEmpty == true
+                ? task.description!
+                : 'It is time to work on "${task.title}".',
+            scheduledDate: task.dueDate!,
+          );
+        }
+      } catch (_) {}
 
       emit(const TasksSuccessMessageState(data: "Task restored successfully"));
       await _loadAndEmitTasks(emit);

@@ -23,4 +23,5 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.4.10" apply false
 }
 
+rootProject.name = "focus_flow"
 include(":app")

@@ -7,7 +7,14 @@ sealed class TasksEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-final class OnLoadTasksEvent extends TasksEvent {}
+final class OnLoadTasksEvent extends TasksEvent {
+  final bool silent;
+
+  const OnLoadTasksEvent({this.silent = false});
+
+  @override
+  List<Object?> get props => [silent];
+}
 
 final class OnAddTaskEvent extends TasksEvent {
   final String title;

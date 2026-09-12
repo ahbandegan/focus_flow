@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:focus_flow/core/database/app_database.dart';
 import 'package:focus_flow/core/utils/format_minutes.dart';
 import 'package:focus_flow/core/utils/show_snackbar.dart';
 import 'package:focus_flow/features/home/presentation/widget/task_card.dart';
@@ -10,11 +11,34 @@ import 'package:intl/intl.dart';
 
 import '../widget/stat_card.dart';
 
-class HomePage extends StatelessWidget {
-  final AudioPlayer player = AudioPlayer();
-  final SettingsRepository _settingsRepository;
+class HomePage extends StatefulWidget {
+  final SettingsRepository settingsRepository;
+  final void Function(Task?) onPomodoroNav;
 
-  HomePage({super.key, required this._settingsRepository});
+  const HomePage({
+    super.key,
+    required this.settingsRepository,
+    required this.onPomodoroNav,
+  });
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final AudioPlayer player = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<TasksBloc>().add(const OnLoadTasksEvent(silent: true));
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -29,6 +53,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isDesktop = size.width >= 600;
+
     return BlocConsumer<TasksBloc, TasksState>(
       buildWhen: (previous, current) => current is! TasksSuccessMessageState,
       builder: (context, state) {
@@ -58,11 +85,14 @@ class HomePage extends StatelessWidget {
                 (previousValue, element) =>
                     previousValue + element.completedPomodoros,
               );
-          final focusTime = pomodorosCount * _settingsRepository.focusDuration;
+          final focusTime = pomodorosCount * widget.settingsRepository.focusDuration;
 
           return ListView(
-            padding: const EdgeInsets.all(30.0),
-            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 30.0 : 16.0,
+              vertical: isDesktop ? 30.0 : 20.0,
+            ),
+            physics: const BouncingScrollPhysics(),
             scrollDirection: Axis.vertical,
             children: [
               Text(
@@ -70,17 +100,17 @@ class HomePage extends StatelessWidget {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.outline,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: isDesktop ? 16 : 14,
                 ),
               ),
               Text(
                 _getGreeting(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 30,
+                  fontSize: isDesktop ? 30 : 24,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               GridView.extent(
                 shrinkWrap: true,
@@ -88,7 +118,7 @@ class HomePage extends StatelessWidget {
                 maxCrossAxisExtent: 250,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                mainAxisExtent: 130,
+                mainAxisExtent: isDesktop ? 130 : 120,
                 children: [
                   StatCard(
                     icon: Icons.task_alt,
@@ -163,8 +193,8 @@ class HomePage extends StatelessWidget {
                           ),
                         );
                       },
-                      onStart: (id) {
-                        // todo start task
+                      onStart: () {
+                        widget.onPomodoroNav(e);
                       },
                       onDelete: (id) {
                         context.read<TasksBloc>().add(
@@ -183,14 +213,14 @@ class HomePage extends StatelessWidget {
       },
       listener: (BuildContext context, TasksState state) {
         if (state is TasksSuccessMessageState) {
-          if (_settingsRepository.soundEnabled) {
+          if (widget.settingsRepository.soundEnabled) {
             player.play(AssetSource('audio/success.mp3'));
           }
           showSnackbar(context: context, msg: state.data, isError: false);
         }
 
         if (state is TasksErrorState) {
-          if (_settingsRepository.soundEnabled) {
+          if (widget.settingsRepository.soundEnabled) {
             player.play(AssetSource('audio/error.mp3'));
           }
           showSnackbar(

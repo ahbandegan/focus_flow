@@ -1,7 +1,50 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_flow/core/database/app_database.dart';
+import 'package:focus_flow/core/services/notification_service.dart';
 import 'package:focus_flow/features/tasks/domain/repositories/task_repository.dart';
 import 'package:focus_flow/features/tasks/presentation/bloc/tasks_bloc.dart';
+
+class MockNotificationService implements NotificationService {
+  int? scheduledId;
+  String? scheduledTitle;
+  DateTime? scheduledDate;
+  int? cancelledId;
+
+  @override
+  FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin =>
+      FlutterLocalNotificationsPlugin();
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<void> requestPermissions() async {}
+
+  @override
+  Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {}
+
+  @override
+  Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+  }) async {
+    scheduledId = id;
+    scheduledTitle = title;
+    this.scheduledDate = scheduledDate;
+  }
+
+  @override
+  Future<void> cancelNotification(int id) async {
+    cancelledId = id;
+  }
+}
 
 class MockTaskRepository implements TaskRepository {
   final List<Task> _tasks = [];
@@ -252,5 +295,67 @@ void main() {
 
     final updated = await taskRepository.getTaskById(id);
     expect(updated?.isDeleted, isTrue);
+  });
+
+  test('Adding task with future dueDate schedules notification', () async {
+    final mockNotification = MockNotificationService();
+    final blocWithNotification = TasksBloc(
+      taskRepository: taskRepository,
+      notificationService: mockNotification,
+    );
+    final futureDate = DateTime.now().add(const Duration(hours: 2));
+
+    blocWithNotification.add(
+      OnAddTaskEvent(
+        title: 'Notify Task',
+        priority: 1,
+        isCompleted: false,
+        estimatedPomodoros: 2,
+        completedPomodoros: 0,
+        orderIndex: 0,
+        isDeleted: false,
+        dueDate: futureDate,
+        dueTime: null,
+      ),
+    );
+
+    await expectLater(
+      blocWithNotification.stream,
+      emitsThrough(isA<TasksSuccessState>()),
+    );
+
+    expect(mockNotification.scheduledTitle, contains('Notify Task'));
+    expect(mockNotification.scheduledDate, equals(futureDate));
+
+    await blocWithNotification.close();
+  });
+
+  test('Completing task cancels scheduled notification', () async {
+    final mockNotification = MockNotificationService();
+    final blocWithNotification = TasksBloc(
+      taskRepository: taskRepository,
+      notificationService: mockNotification,
+    );
+
+    final id = await taskRepository.insertTask(
+      title: 'Cancel Me',
+      priority: 1,
+      isCompleted: false,
+      estimatedPomodoros: 1,
+      completedPomodoros: 0,
+      orderIndex: 0,
+      isDeleted: false,
+    );
+
+    blocWithNotification.add(OnCompleteTaskEvent(id: id));
+
+    await expectLater(
+      blocWithNotification.stream,
+      emitsThrough(isA<TasksSuccessState>()),
+    );
+
+    expect(mockNotification.cancelledId, equals(id));
+
+    await blocWithNotification.close();
   });
 }
