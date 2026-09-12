@@ -11,7 +11,7 @@ import 'package:focus_flow/features/settings/presentation/cubit/settings_cubit.d
 import 'package:focus_flow/features/settings/presentation/widget/settings_bottom_sheet.dart';
 import 'package:focus_flow/features/statistics/presentation/pages/statistics_page.dart';
 import 'package:focus_flow/features/tasks/presentation/pages/tasks_page.dart';
-import 'package:focus_flow/initialize_dependensies.dart';
+import 'package:focus_flow/initialize_dependencies.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'core/widgets/mobile_navigation.dart';
