@@ -23,8 +23,13 @@ class NotificationService {
     const WindowsInitializationSettings initializationSettingsWindows =
         WindowsInitializationSettings(
           appName: 'Focus Flow',
-          appUserModelId: 'com.ahbandegan.focusflow',
+          appUserModelId: 'ir.amirhesambandegan.focusflow',
           guid: 'a29b7941-8f55-46f9-b88e-6701ba332b73', // Example GUID
+        );
+
+    const LinuxInitializationSettings initializationSettingsLinux =
+        LinuxInitializationSettings(
+          defaultActionName: 'Open notification',
         );
 
     // For iOS/macOS, initialization settings would go here,
@@ -32,6 +37,7 @@ class NotificationService {
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       windows: initializationSettingsWindows,
+      linux: initializationSettingsLinux,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
@@ -68,8 +74,12 @@ class NotificationService {
           priority: Priority.high,
         );
 
+    const LinuxNotificationDetails linuxNotificationDetails =
+        LinuxNotificationDetails();
+
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
+      linux: linuxNotificationDetails,
     );
 
     await flutterLocalNotificationsPlugin.show(
@@ -99,6 +109,7 @@ class NotificationService {
           importance: Importance.max,
           priority: Priority.high,
         ),
+        linux: LinuxNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
